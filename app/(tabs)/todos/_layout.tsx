@@ -1,16 +1,26 @@
-import { Stack } from "expo-router"
-import { screenOptions } from "../_layout"
+import { router, Stack } from "expo-router"
+import Header from "@/components/navigation/Header";
 
 export default function TodosLayout() {
     return (
-        <Stack screenOptions={{ contentStyle: { backgroundColor: '#f8f8f8', } }} >
-            <Stack.Screen name="index" options={screenOptions('To Do')} />
-            <Stack.Screen name="[id]" options={({ route }: any) => {
-                const { id } = route.params;
+        <Stack screenOptions={{ contentStyle: { backgroundColor: '#f8f8f8' } }} >
+            <Stack.Screen name="index" options={{ header: () => <Header title={''} />, }} />
+            <Stack.Screen name="add" options={({ route }: any) => {
+                const { id, name } = route.params;
                 return {
-                    headerTitle: `Task ${id}`,
+                    header: () => <Header title={id ? 'Edit To do' : 'Add To Do'} showBack/>,
                 };
             }} />
+            <Stack.Screen name="[id]" options={({ route }: any) => {
+                const { name, id } = route.params;
+                return {
+                    header: () => <Header title={name} showBack showEdit leftAction={() => router.push({
+                        pathname: '/(tabs)/todos/add',
+                        params: { id, name },
+                    })} />,
+                };
+            }} />
+
         </Stack>
     )
 }

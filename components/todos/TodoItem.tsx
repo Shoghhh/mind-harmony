@@ -7,34 +7,25 @@ import moment from 'moment';
 import { useRouter } from 'expo-router';
 import { icons } from '@/assets/icons';
 import globalTextStyles from '@/styles/globalTextStyles';
+import { Todo } from '@/types';
 
-export type Task = {
-    id: string;
-    title: string;
-    date: string;
-    completed: boolean;
-    completedDate?: string;
-    priority: number;
-    description: string;
-};
-
-const TaskItem = ({
+const TodoItem = ({
     item,
     viewMode,
     onDelete,
     onToggleComplete,
 }: {
-    item: Task;
+    item: Todo;
     viewMode: string
     onDelete: () => void;
     onToggleComplete: () => void;
 }) => {
     const router = useRouter()
-    const { title, date, completed, completedDate, priority, description } = item;
+    const { id, title, createdDate, completed, completedDate, priority, description } = item;
 
     const getPriorityColor = (priority: number) => {
         const colorsMap = [colors.primaryLight, colors.warning, colors.error];
-        return colorsMap[priority - 1] || colors.primaryLight;
+        return colorsMap[priority] || colors.primaryLight;
     };
 
     const formatDate = (dateStr: string) => {
@@ -74,7 +65,11 @@ const TaskItem = ({
                         styles.taskItem,
                         completed && { backgroundColor: colors.backgroundLight },
                     ]}
-                    onPress={() => router.push(`/(tabs)/todos/${item.id}`)}
+
+                    onPress={() => router.push({
+                        pathname: '/(tabs)/todos/[id]',
+                        params: { id: item.id, name: item.title },
+                    })}
                 >
                     <View style={styles.titlePriorityContainer}>
                         <Text style={[styles.taskTitle, completed && { textDecorationLine: 'line-through', textDecorationColor: colors.primary, fontWeight: 'light' }]}>{title}</Text>
@@ -96,7 +91,7 @@ const TaskItem = ({
                         <Text style={globalTextStyles.regular12Secondary}>
                             {completed && completedDate
                                 ? `Completed on: ${formatDate(completedDate)}`
-                                : `Added on: ${formatDate(date)}`}
+                                : `Added on: ${formatDate(createdDate)}`}
                         </Text>
                         {<TouchableOpacity onPress={onToggleComplete}>
                             {icons[completed ? 'check' : 'uncheckedCircle']()}
@@ -147,7 +142,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.lightError,
         ...globalStyles.justifyCenter,
-        ...globalStyles.alignStart,
+        ...globalStyles.alignEnd,
         paddingRight: 20,
         borderRadius: 12,
     },
@@ -158,4 +153,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default TaskItem;
+export default TodoItem;

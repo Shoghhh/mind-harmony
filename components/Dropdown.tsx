@@ -7,8 +7,8 @@ import globalTextStyles from '@/styles/globalTextStyles';
 
 type DropdownProps = {
   options: string[];
-  selectedOption: string;
-  onSelect: (option: string) => void;
+  selectedOption: number;
+  onSelect: (option: number) => void;
   style?: {}
 };
 
@@ -34,7 +34,7 @@ const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, onSelect, 
         style={styles.dropdownButton}
         onPress={openDropdown}
       >
-        <Text style={globalTextStyles.regular14PrimaryDark}>{selectedOption}</Text>
+        <Text style={globalTextStyles.regular14PrimaryDark}>{options[selectedOption]}</Text>
         {icons['keyArrowDown']()}
       </TouchableOpacity>
 
@@ -59,11 +59,11 @@ const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, onSelect, 
             <FlatList
               data={options}
               keyExtractor={(item) => item}
-              renderItem={({ item }) => (
+              renderItem={({ item, index }) => (
                 <TouchableOpacity
                   style={styles.menuItem}
                   onPress={() => {
-                    onSelect(item);
+                    onSelect(index);
                     setIsVisible(false);
                   }}
                 >

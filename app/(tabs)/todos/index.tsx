@@ -1,53 +1,61 @@
 import { icons } from '@/assets/icons';
 import Dropdown from '@/components/Dropdown';
-import TaskItem, { Task } from '@/components/tasks/TaskItem';
+import TodoItem from '@/components/todos/TodoItem';
+import { toggleTodoCompletion, updateTodoList } from '@/features/todos/todosSlice';
+import { deleteTodo, fetchTodos } from '@/features/todos/todosThunks';
+import { AppDispatch, RootState } from '@/store/store';
 import colors from '@/styles/colors';
 import globalStyles from '@/styles/globalStyles';
 import globalTextStyles from '@/styles/globalTextStyles';
-import { useRouter } from 'expo-router';
+import { Todo } from '@/types';
+import { Sort, SortLabels } from '@/utils/constants';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { Bar } from 'react-native-progress';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-const TaskList = () => {
+const TodoList = () => {
     const router = useRouter();
-    const [tasks, setTasks] = useState<Task[]>([
-        { id: '1', title: 'Task 1', date: '2024-12-29T08:29:33.401Z', completed: false, priority: 1, description: 'Lorem ipsum...' },
-        { id: '2', title: 'Task 2', date: '2024-12-30T08:29:33.401Z', completed: true, completedDate: '2024-12-29T08:29:33.401Z', priority: 2, description: 'Lorem ipsum Lorem ipsum' },
-        { id: '3', title: 'Task 3', date: '2024-12-28T08:29:33.391Z', completed: false, priority: 3, description: 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum vLorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum' },
-        { id: '4', title: 'Task 4', date: '2024-12-28T02:29:33.401Z', completed: true, completedDate: '2025-01-01T08:29:33.401Z', priority: 2, description: 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum vLorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum' },
-        { id: '5', title: 'Task 5', date: '2024-12-28T10:29:33.401Z', completed: false, priority: 1, description: 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum vLorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum' },
-        { id: '6', title: 'Task 6 efrkjn  isfdjnisfn iuashid', date: '2025-01-07T02:29:33.401Z', completed: true, completedDate: '2025-01-01T08:29:33.401Z', priority: 2, description: '' },
-        { id: '7', title: 'Task 7', date: '2025-01-08T10:29:33.401Z', completed: false, priority: 1, description: 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum vLorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum' },
-        { id: '8', title: 'Task 8', date: '2025-01-08T10:29:33.401Z', completed: false, priority: 1, description: 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum vLorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum' },
-        { id: '9', title: 'Task 9', date: '2025-01-08T10:29:33.401Z', completed: false, priority: 1, description: 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum vLorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum' },
-        { id: '10', title: 'Task 10', date: '2025-01-08T10:29:33.401Z', completed: false, priority: 1, description: 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum vLorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum' },
-    ]);
+    const dispatch = useDispatch<AppDispatch>();
+    const { date } = useLocalSearchParams();
+    const initialDate = Array.isArray(date) ? date[0] : date;
+    console.log({initialDate})
+    const parsedDate = initialDate ? new Date(initialDate) : new Date();
+    const todos = useSelector((state: RootState) => state.todos.todos);
+    // const loading = useSelector((state: RootState) => state.todos.loading);
+    // const error = useSelector((state: RootState) => state.todos.error);
+
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [selectedTab, setSelectedTab] = useState<'incomplete' | 'completed'>('incomplete');
     const [completionProgress, setCompletionProgress] = useState<number>(0);
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [sortOption, setSortOption] = useState('Date Created');
+    const [currentDate, setCurrentDate] = useState(parsedDate);
+    const [sortOption, setSortOption] = useState(Sort.CreatedDate);
+    const sortOptions = [SortLabels[Sort.CreatedDate], SortLabels[Sort.CompletedDate], SortLabels[Sort.Priority]];
     const [isAscending, setIsAscending] = useState(true);
     const [progressBarWidth, setProgressBarWidth] = useState<number>(0);
     const [viewMode, setViewMode] = useState<'list' | 'tabbed'>('list');
 
+    useEffect(() => {
+        // dispatch(fetchTodos());
+    }, [dispatch]);
 
     useEffect(() => {
-        const totalTasks = groupTasksByDay(tasks, currentDate);
-        const completedTasks = totalTasks.filter((task) => task.completed).length;
-        const totalTasksNumber = totalTasks.length;
-        setCompletionProgress(totalTasksNumber ? (completedTasks / totalTasksNumber) * 100 : 0);
-    }, [tasks, currentDate]);
+        const totalTodos = groupTodosByDay(todos, currentDate);
+        const completedTodos = totalTodos.filter((todo) => todo.completed).length;
+        const totalTodosNumber = totalTodos.length;
+        setCompletionProgress(totalTodosNumber ? (completedTodos / totalTodosNumber) * 100 : 0);
+    }, [todos, currentDate]);
 
     useEffect(() => {
-        sortTasks(sortOption);
+        sortTodos(sortOption);
     }, [sortOption, isAscending]);
 
-    const groupTasksByDay = (tasks: Task[], date: Date) => {
-        return tasks.filter((task) => moment(task.date).isSame(date, 'day'));
+    const groupTodosByDay = (todos: Todo[], date: Date) => {
+        return todos.filter((todo) => moment(todo.assignedDate).isSame(date, 'day'));
     };
 
     const handleLayout = (event: any) => {
@@ -67,51 +75,47 @@ const TaskList = () => {
         setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 1)));
     };
 
-    const sortTasks = (option: string) => {
-        const sortedTasks = [...tasks];
+    const sortTodos = (option: number) => {
+        const sortedTodos = [...todos];
         const sortFunc = getSortFunction(option);
-        sortedTasks.sort(sortFunc);
-        setTasks(sortedTasks);
+        sortedTodos.sort(sortFunc);
+        dispatch(updateTodoList(sortedTodos));
     };
 
-    const getSortFunction = (option: string) => {
-        if (option === 'Date Created') {
-            return (a: Task, b: Task) => (isAscending ? new Date(a.date).getTime() - new Date(b.date).getTime() : new Date(b.date).getTime() - new Date(a.date).getTime());
+    const getSortFunction = (option: number) => {
+        if (option === 0) {
+            return (a: Todo, b: Todo) => (isAscending ? new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime() : new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime());
         }
-        if (option === 'Date Completed') {
-            return (a: Task, b: Task) => {
+        if (option === 1) {
+            return (a: Todo, b: Todo) => {
                 const aCompletedDate = a.completedDate ? new Date(a.completedDate).getTime() : Infinity;
                 const bCompletedDate = b.completedDate ? new Date(b.completedDate).getTime() : Infinity;
                 return isAscending ? aCompletedDate - bCompletedDate : bCompletedDate - aCompletedDate;
             };
         }
-        return (a: Task, b: Task) => (isAscending ? a.priority - b.priority : b.priority - a.priority);
+        return (a: Todo, b: Todo) => (isAscending ? a.priority - b.priority : b.priority - a.priority);
     };
 
 
     const handleAdd = () => {
-        router.push('/(tabs)/todos/add')
+        router.push({
+            pathname: '/(tabs)/todos/add',
+            params: { date: currentDate.toISOString() },
+        })
     }
 
-    const handleDelete = (taskId: string) => {
-        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    const handleDelete = (todoId: number) => {
+        dispatch(deleteTodo(todoId));
     };
-
-    const handleToggleComplete = (taskId: string) => {
-        setTasks((prevTasks) =>
-            prevTasks.map((task) =>
-                task.id === taskId
-                    ? { ...task, completed: !task.completed, completedDate: task.completed ? undefined : new Date().toISOString() }
-                    : task
-            )
-        );
+    const handleToggleComplete = (todoId: number) => {
+        dispatch(toggleTodoCompletion(todoId));
     };
 
     const toggleViewMode = () => {
         setViewMode(viewMode === 'list' ? 'tabbed' : 'list');
     };
 
-    const filteredTasks = selectedTab === 'incomplete' ? tasks.filter((task) => !task.completed) : tasks.filter((task) => task.completed);
+    const filteredTodos = selectedTab === 'incomplete' ? todos.filter((todo) => !todo.completed) : todos.filter((todo) => todo.completed);
 
     return (
         <View style={styles.container}>
@@ -136,7 +140,7 @@ const TaskList = () => {
 
                 <View style={globalStyles.rowSpaceBetween}>
                     <View style={globalStyles.rowStart}>
-                        <Dropdown options={['Date Created', 'Date Completed', 'Priority']} selectedOption={sortOption} onSelect={setSortOption} style={{ width: 140, padding: 0 }} />
+                        <Dropdown options={sortOptions} selectedOption={sortOption} onSelect={setSortOption} style={{ width: 140, padding: 0 }} />
                         <TouchableOpacity style={styles.toggleButton} onPress={() => setIsAscending(!isAscending)}>
                             {icons[isAscending ? 'asc' : 'desc']()}
                         </TouchableOpacity>
@@ -163,15 +167,15 @@ const TaskList = () => {
 
             <FlatList
                 showsVerticalScrollIndicator={false}
-                data={groupTasksByDay(viewMode === 'tabbed' ? filteredTasks : tasks, currentDate)}
+                data={groupTodosByDay(viewMode === 'tabbed' ? filteredTodos : todos, currentDate)}
                 renderItem={({ item }) => (
-                    <TaskItem item={item} onDelete={() => handleDelete(item.id)} viewMode={viewMode} onToggleComplete={() => handleToggleComplete(item.id)} />
+                    <TodoItem item={item} onDelete={() => handleDelete(item.id)} viewMode={viewMode} onToggleComplete={() => handleToggleComplete(item.id)} />
                 )}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.id.toString()}
                 contentContainerStyle={styles.listContainer}
                 ListEmptyComponent={() => (
                     <View style={styles.emptyContainer}>
-                        <Text style={globalTextStyles.regular16GrayDark}>No tasks available</Text>
+                        <Text style={globalTextStyles.regular16GrayDark}>No todos available</Text>
                     </View>
                 )}
             />
@@ -235,4 +239,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TaskList;
+export default TodoList;

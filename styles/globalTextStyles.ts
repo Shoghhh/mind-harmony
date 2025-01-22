@@ -74,9 +74,26 @@ const globalTextStyles = StyleSheet.create({
     color: colors.grayLight,
   },
 
-
   medium14PrimaryDark: {
     fontSize: 14,
+    fontWeight: 'medium',
+    color: colors.primaryDark,
+  },
+
+  medium14White: {
+    fontSize: 14,
+    fontWeight: 'medium',
+    color: colors.white,
+  },
+
+  medium16Primary: {
+    fontSize: 16,
+    fontWeight: 'medium',
+    color: colors.primaryDark,
+  },
+
+  medium16PrimaryDark: {
+    fontSize: 16,
     fontWeight: 'medium',
     color: colors.primaryDark,
   },
@@ -85,6 +102,11 @@ const globalTextStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'medium',
     color: colors.white
+  },
+  medium20SecondaryDark: {
+    fontSize: 20,
+    fontWeight: 'medium',
+    color: colors.secondaryDark
   },
 
   medium22PrimaryDark: {
@@ -105,13 +127,24 @@ const globalTextStyles = StyleSheet.create({
     color: colors.white,
   },
 
-
+  bold16White: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.white,
+  },
 
   bold18Primary: {
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.primary,
-  }
+  },
+
+  bold22PrimaryDark: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.primaryDark,
+  },
+
 
 
 
