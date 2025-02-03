@@ -11,7 +11,7 @@ import { deleteTodo } from '@/features/todos/todosThunks';
 import { toggleTodoCompletion } from '@/features/todos/todosSlice';
 import { Priority } from '@/utils/constants';
 
-const TodoDetail = () => {
+export default function TodoDetail() {
     const router = useRouter();
     const { id } = useLocalSearchParams();
     const dispatch = useDispatch<AppDispatch>();
@@ -140,5 +140,3 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
-
-export default TodoDetail;

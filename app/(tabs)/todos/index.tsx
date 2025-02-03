@@ -14,17 +14,18 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+
 import { Bar } from 'react-native-progress';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 
-const TodoList = () => {
+export default function TodoList() {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const { date } = useLocalSearchParams();
     const initialDate = Array.isArray(date) ? date[0] : date;
-    console.log({initialDate})
-    const parsedDate = initialDate ? new Date(initialDate) : new Date();
+    const parsedDate = initialDate ? new Date(initialDate) : new Date()
+
     const todos = useSelector((state: RootState) => state.todos.todos);
     // const loading = useSelector((state: RootState) => state.todos.loading);
     // const error = useSelector((state: RootState) => state.todos.error);
@@ -33,6 +34,7 @@ const TodoList = () => {
     const [selectedTab, setSelectedTab] = useState<'incomplete' | 'completed'>('incomplete');
     const [completionProgress, setCompletionProgress] = useState<number>(0);
     const [currentDate, setCurrentDate] = useState(parsedDate);
+    console.log({initialDate, parsedDate, currentDate})
     const [sortOption, setSortOption] = useState(Sort.CreatedDate);
     const sortOptions = [SortLabels[Sort.CreatedDate], SortLabels[Sort.CompletedDate], SortLabels[Sort.Priority]];
     const [isAscending, setIsAscending] = useState(true);
@@ -180,7 +182,7 @@ const TodoList = () => {
                 )}
             />
 
-            <DateTimePickerModal isVisible={isDatePickerVisible} mode="date" date={currentDate} onConfirm={handleDateChange} onCancel={() => setDatePickerVisibility(false)} locale="en_GB" />
+            <DateTimePickerModal isVisible={isDatePickerVisible} mode="date" onConfirm={handleDateChange} onCancel={() => setDatePickerVisibility(false)} locale="en_GB" />
         </View>
     );
 };
@@ -194,10 +196,8 @@ const styles = StyleSheet.create({
         ...globalStyles.columnCenter,
         width: 35,
         height: 35,
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
+        boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.3)',  // boxShadow for iOS
+        elevation: 5,  
     },
     tabContainer: { ...globalStyles.rowSpaceBetween, marginBottom: 20 },
     tabButton: {
@@ -238,5 +238,3 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
 });
-
-export default TodoList;

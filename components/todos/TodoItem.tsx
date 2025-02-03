@@ -110,11 +110,8 @@ const styles = StyleSheet.create({
         marginVertical: 12,
         marginHorizontal: 8,
         borderRadius: 12,
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.4,
-        shadowRadius: 8,
-        elevation: Platform.OS === 'android' ? 5 : 0,
+        boxShadow: '0px 3px 8px rgba(0, 0, 0, 0.4)',  // boxShadow for iOS
+        elevation: Platform.OS === 'android' ? 5 : 0,  // For Android
     },
     taskTitle: {
         ...globalTextStyles.bold18Primary,

@@ -69,10 +69,8 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         borderRadius: 25,
         borderCurve: 'continuous',
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: 10 },
-        shadowRadius: 10,
-        shadowOpacity: 0.1,
+        boxShadow: '0px 10px 10px rgba(0, 0, 0, 0.1)',  // boxShadow for iOS
+        elevation: 5,  // For Android
         paddingBottom: 10, 
     },
 })
