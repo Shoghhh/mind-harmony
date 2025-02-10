@@ -6,13 +6,14 @@ import globalStyles from '@/styles/globalStyles';
 import globalTextStyles from '@/styles/globalTextStyles';
 
 type DropdownProps = {
-  options: string[];
-  selectedOption: number;
+  options: { value: number, label: string }[];
+  selectedOption: string;
   onSelect: (option: number) => void;
-  style?: {}
+  style?: {},
+  btnStyle?: {}
 };
 
-const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, onSelect, style }) => {
+const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, onSelect, style, btnStyle }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [buttonLayout, setButtonLayout] = useState<LayoutRectangle | null>(null);
   const buttonRef = useRef<View>(null);
@@ -31,10 +32,10 @@ const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, onSelect, 
     <View style={[styles.dropdownContainer, style]}>
       <TouchableOpacity
         ref={buttonRef}
-        style={styles.dropdownButton}
+        style={[styles.dropdownButton, btnStyle]}
         onPress={openDropdown}
       >
-        <Text style={globalTextStyles.regular14PrimaryDark}>{options[selectedOption]}</Text>
+        <Text style={globalTextStyles.regular14PrimaryDark}>{selectedOption}</Text>
         {icons['keyArrowDown']()}
       </TouchableOpacity>
 
@@ -58,18 +59,18 @@ const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, onSelect, 
           >
             <FlatList
               data={options}
-              keyExtractor={(item) => item}
-              renderItem={({ item, index }) => (
-                <TouchableOpacity
+              keyExtractor={(item) => item.label}
+              renderItem={({ item }) => {
+                return <TouchableOpacity
                   style={styles.menuItem}
                   onPress={() => {
-                    onSelect(index);
+                    onSelect(item.value);
                     setIsVisible(false);
                   }}
                 >
-                  <Text style={globalTextStyles.regular14PrimaryDark}>{item}</Text>
+                  <Text style={globalTextStyles.regular14PrimaryDark}>{item.label}</Text>
                 </TouchableOpacity>
-              )}
+              }}
             />
           </View>
         </Modal>

@@ -12,7 +12,7 @@ import { addTodo, updateTodo } from '@/features/todos/todosThunks';
 import { AppDispatch, RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 
-const AddTodo = () => {
+export default function AddTodo() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>()
   const [title, setTitle] = useState('');
@@ -57,7 +57,7 @@ const AddTodo = () => {
       completed: false,
     };
 
-    const navigate = () => router.push({pathname: '/(tabs)/todos', params: {date: newTodo.assignedDate}})
+    const navigate = () => router.push({ pathname: '/(tabs)/todos', params: { date: newTodo.assignedDate } })
 
     if (id) {
       dispatch(updateTodo(newTodo.id, newTodo)).finally(navigate);
@@ -147,4 +147,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddTodo;
+;
