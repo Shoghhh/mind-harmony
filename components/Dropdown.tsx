@@ -9,8 +9,8 @@ type DropdownProps = {
   options: { value: number, label: string }[];
   selectedOption: string;
   onSelect: (option: number) => void;
-  style?: {},
-  btnStyle?: {}
+  style?: object,
+  btnStyle?: object
 };
 
 const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, onSelect, style, btnStyle }) => {
@@ -104,11 +104,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 8,
     paddingVertical: 8,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 5,
+    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.2)',  // boxShadow for iOS
+    elevation: 5,  // For Android
   },
   menuItem: {
     paddingVertical: 10,

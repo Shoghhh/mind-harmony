@@ -23,6 +23,10 @@ export default function AddTodo() {
   const parsedDate = initialDate ? new Date(initialDate) : new Date();
   const [assignedDate, setAssignedDate] = useState(parsedDate);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const priorityOptions = Object.entries(PriorityLabels).map(([key, label]) => ({
+    value: Number(key) as Priority,
+    label,
+}))
 
   const existingTodo = useSelector((state: RootState) =>
     id ? state.todos.todos.find((todo) => todo.id === parseInt(id as string)) : null
@@ -88,8 +92,8 @@ export default function AddTodo() {
         numberOfLines={4}
       />
       <Dropdown
-        options={[PriorityLabels[Priority.Low], PriorityLabels[Priority.Medium], PriorityLabels[Priority.High]]}
-        selectedOption={priority}
+        options={priorityOptions}
+        selectedOption={PriorityLabels[priority]}
         onSelect={setPriority}
         style={styles.dropdown}
       />
@@ -146,5 +150,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
-;

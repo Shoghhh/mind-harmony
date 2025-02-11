@@ -1,10 +1,10 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
+import { Pressable, StyleSheet } from 'react-native'
 import React, { useEffect } from 'react'
 import { icons } from '../../assets/icons';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 
-interface TabBarButton {
+interface ITabBarButton {
     isFocused: any;
     label: any;
     color: string;
@@ -13,7 +13,7 @@ interface TabBarButton {
     onLongPress: any;
 }
 
-const TabBarButton = (props: TabBarButton) => {
+const TabBarButton = (props: ITabBarButton) => {
     const { isFocused, label, routeName, color } = props;
 
     const scale = useSharedValue(0);

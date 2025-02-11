@@ -32,6 +32,8 @@ const Header = memo(({ title, showBack, showEdit, leftAction }: HeaderProps) => 
     );
 });
 
+Header.displayName = "HeaderComponent";
+
 const styles = StyleSheet.create({
     header: {
         ...globalStyles.rowSpaceBetween,

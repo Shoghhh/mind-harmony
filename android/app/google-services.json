@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "602928549917",
+    "project_id": "mind--harmony",
+    "storage_bucket": "mind--harmony.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:602928549917:android:0b3036fb577a123b4e76f4",
+        "android_client_info": {
+          "package_name": "com.mindharmony.firebase"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "602928549917-24pukpbn94ni12hm0gsjs0nol57nmu8k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mindharmony.firebase",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5ifMCmaR_9WHAn52qMo65jAehj_iXi68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "602928549917-813ojh3mcq5g9ron3l4hbnl0tpg3hmbk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mindharmony.firebase"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,23 @@
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/auth",
+        "destination": "mindharmony://auth  exp://10.27.64.61:8081/--/auth",
+        "type": 301
+      }
+    ]
+  }
+}

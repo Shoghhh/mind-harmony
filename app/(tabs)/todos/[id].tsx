@@ -17,13 +17,13 @@ export default function TodoDetail() {
     const dispatch = useDispatch<AppDispatch>();
     const todoId = typeof id === 'string' ? parseInt(id, 10) : undefined;
 
-    if (todoId === undefined || isNaN(todoId)) {
-        return <Text>Invalid Todo ID</Text>;
-    }
-
     const todo = useSelector((state: RootState) =>
         state.todos.todos.find((item) => item.id === todoId)
     );
+
+    if (todoId === undefined || isNaN(todoId)) {
+        return <Text>Invalid Todo ID</Text>;
+    }
 
     if (!todo) {
         return <Text>Todo not found</Text>;
