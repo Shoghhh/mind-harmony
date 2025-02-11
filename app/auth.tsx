@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Button, KeyboardAvoidingView, Linking, StyleSheet, Text, TextInput, View } from "react-native";
-import { useRouter } from "expo-router";
 import globalTextStyles from "@/styles/globalTextStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink } from 'firebase/auth';
@@ -10,8 +9,6 @@ export default function AuthScreen() {
     const [email, setEmail] = useState('')
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
-    const router = useRouter()
-    const isSubscribed = useRef(true);
 
     const sendSignInLink = async () => {
         const actionCodeSettings = {
@@ -21,13 +18,11 @@ export default function AuthScreen() {
 
         try {
             setLoading(true);
-            // await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-            // console.log('Email link sent to:', email);
-            // setMessage('Sign-in link sent! Check your email to complete sign-in.');
+            await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+            console.log('Email link sent to:', email);
+            setMessage('Sign-in link sent! Check your email to complete sign-in.');
 
-            // await AsyncStorage.setItem('emailForSignIn', email);
-            AsyncStorage.removeItem('emailForSignIn')
-            router.push('/todos');
+            await AsyncStorage.setItem('emailForSignIn', email);
         } catch (error: any) {
             console.error('Error signing up: ', error);
             setMessage('Error sending sign-in link. Please try again.');
@@ -40,10 +35,10 @@ export default function AuthScreen() {
         const emailForSignIn = await AsyncStorage.getItem('emailForSignIn');
         if (emailForSignIn && isSignInWithEmailLink(auth, url)) {
             try {
-                // await signInWithEmailLink(auth, emailForSignIn, url);
+                const res = await signInWithEmailLink(auth, emailForSignIn, url);
+                console.log(res)
                 setMessage('Sign-in successful!');
                 AsyncStorage.removeItem('emailForSignIn')
-                router.push('/dashboard');
             } catch (error) {
                 setMessage('Error completing sign-in. Please try again.');
                 console.error('Sign-in error:', error);
@@ -55,15 +50,15 @@ export default function AuthScreen() {
 
     useEffect(() => {
         const handleDeepLink = async ({ url }: { url: string }) => {
-            if (url && isSubscribed.current) {
+            if (url) {
                 if (url.startsWith("mindharmony://auth")) {
                     await handleSignInWithLink(url);
                 }
             }
         };
-        Linking.addEventListener('url', handleDeepLink);
+        const subscribe = Linking.addEventListener('url', handleDeepLink);
         return () => {
-            isSubscribed.current = false;
+            subscribe.remove()
         };
     }, []);
 

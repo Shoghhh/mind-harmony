@@ -15,8 +15,8 @@
     "redirects": [
       {
         "source": "/auth",
-        "destination": "exp://10.27.64.61:8081/--/auth",
-        "type": 302
+        "destination": "mindharmony://auth  exp://10.27.64.61:8081/--/auth",
+        "type": 301
       }
     ]
   }
