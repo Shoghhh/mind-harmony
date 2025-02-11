@@ -9,7 +9,7 @@ type DropdownProps = {
   options: string[];
   selectedOption: number;
   onSelect: (option: number) => void;
-  style?: {}
+  style?: object
 };
 
 const Dropdown: React.FC<DropdownProps> = ({ options, selectedOption, onSelect, style }) => {

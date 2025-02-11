@@ -20,7 +20,7 @@ import {
   deleteTodoApi,
 } from '../../services/todoApi';
 import { Todo } from '../../types';
-import { AppDispatch, AppThunk, RootState } from '@/store/store';
+import { AppThunk } from '@/store/store';
 
 // Fetch all Todos
 export const fetchTodos = (): AppThunk => async (dispatch) => {

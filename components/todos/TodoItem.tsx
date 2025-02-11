@@ -21,7 +21,7 @@ const TodoItem = ({
     onToggleComplete: () => void;
 }) => {
     const router = useRouter()
-    const { id, title, createdDate, completed, completedDate, priority, description } = item;
+    const { title, createdDate, completed, completedDate, priority, description } = item;
 
     const getPriorityColor = (priority: number) => {
         const colorsMap = [colors.primaryLight, colors.warning, colors.error];
@@ -56,9 +56,9 @@ const TodoItem = ({
     return (
         <GestureHandlerRootView>
             <Swipeable
-                renderLeftActions={completed || viewMode == 'list' ? () => null : renderLeftActions}
+                renderLeftActions={completed || viewMode === 'list' ? () => null : renderLeftActions}
                 renderRightActions={renderRightActions}
-                onSwipeableOpen={(direction) => (direction === 'right' ? onDelete() : completed || viewMode == 'list' ? null : onToggleComplete())}
+                onSwipeableOpen={(direction) => (direction === 'right' ? onDelete() : completed || viewMode === 'list' ? null : onToggleComplete())}
             >
                 <TouchableOpacity
                     style={[

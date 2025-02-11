@@ -1,6 +1,6 @@
 import { auth } from "@/firebase";
 import { signOut } from "firebase/auth";
-import { View, Text, StyleSheet, Button } from "react-native";
+import { View, StyleSheet, Button } from "react-native";
 // import auth from '@react-native-firebase/auth'
 
 export default function Dashboard() {

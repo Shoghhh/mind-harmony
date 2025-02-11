@@ -6,7 +6,7 @@ export default function TodosLayout() {
         <Stack screenOptions={{ contentStyle: { backgroundColor: '#f8f8f8' } }} >
             <Stack.Screen name="index" options={{ header: () => <Header title={''} />, }} />
             <Stack.Screen name="add" options={({ route }: any) => {
-                const { id, name } = route.params;
+                const { id } = route.params;
                 return {
                     header: () => <Header title={id ? 'Edit To do' : 'Add To Do'} showBack/>,
                 };

@@ -1,4 +1,4 @@
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
