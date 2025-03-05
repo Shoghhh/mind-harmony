@@ -54,52 +54,50 @@ const TodoItem = ({
     );
 
     return (
-        <GestureHandlerRootView>
-            <Swipeable
-                renderLeftActions={completed || viewMode === 'list' ? () => null : renderLeftActions}
-                renderRightActions={renderRightActions}
-                onSwipeableOpen={(direction) => (direction === 'right' ? onDelete() : completed || viewMode === 'list' ? null : onToggleComplete())}
+        <Swipeable
+            renderLeftActions={completed || viewMode === 'list' ? () => null : renderLeftActions}
+            renderRightActions={renderRightActions}
+            onSwipeableOpen={(direction) => (direction === 'right' ? onDelete() : completed || viewMode === 'list' ? null : onToggleComplete())}
+        >
+            <TouchableOpacity
+                style={[
+                    styles.taskItem,
+                    completed && { backgroundColor: colors.backgroundLight },
+                ]}
+
+                onPress={() => router.push({
+                    pathname: '/(tabs)/todos/[id]',
+                    params: { id: item.id, name: item.title },
+                })}
             >
-                <TouchableOpacity
-                    style={[
-                        styles.taskItem,
-                        completed && { backgroundColor: colors.backgroundLight },
-                    ]}
+                <View style={styles.titlePriorityContainer}>
+                    <Text style={[styles.taskTitle, completed && { textDecorationLine: 'line-through', textDecorationColor: colors.primary, fontWeight: 'light' }]}>{title}</Text>
+                    <View
+                        style={[
+                            styles.priorityCircle,
+                            { backgroundColor: getPriorityColor(priority) },
+                        ]}
+                    />
+                </View>
 
-                    onPress={() => router.push({
-                        pathname: '/(tabs)/todos/[id]',
-                        params: { id: item.id, name: item.title },
-                    })}
-                >
-                    <View style={styles.titlePriorityContainer}>
-                        <Text style={[styles.taskTitle, completed && { textDecorationLine: 'line-through', textDecorationColor: colors.primary, fontWeight: 'light' }]}>{title}</Text>
-                        <View
-                            style={[
-                                styles.priorityCircle,
-                                { backgroundColor: getPriorityColor(priority) },
-                            ]}
-                        />
-                    </View>
+                {description && (
+                    <Text style={styles.taskDescription} numberOfLines={2}>
+                        {description}
+                    </Text>
+                )}
 
-                    {description && (
-                        <Text style={styles.taskDescription} numberOfLines={2}>
-                            {description}
-                        </Text>
-                    )}
-
-                    <View style={globalStyles.rowSpaceBetween}>
-                        <Text style={globalTextStyles.regular12Secondary}>
-                            {completed && completedDate
-                                ? `Completed on: ${formatDate(completedDate)}`
-                                : `Added on: ${formatDate(createdDate)}`}
-                        </Text>
-                        {<TouchableOpacity onPress={onToggleComplete}>
-                            {icons[completed ? 'check' : 'uncheckedCircle']()}
-                        </TouchableOpacity>}
-                    </View>
-                </TouchableOpacity>
-            </Swipeable>
-        </GestureHandlerRootView>
+                <View style={globalStyles.rowSpaceBetween}>
+                    <Text style={globalTextStyles.regular12Secondary}>
+                        {completed && completedDate
+                            ? `Completed on: ${formatDate(completedDate)}`
+                            : `Added on: ${formatDate(createdDate)}`}
+                    </Text>
+                    {<TouchableOpacity onPress={onToggleComplete}>
+                        {icons[completed ? 'check' : 'uncheckedCircle']()}
+                    </TouchableOpacity>}
+                </View>
+            </TouchableOpacity>
+        </Swipeable>
     );
 };
 

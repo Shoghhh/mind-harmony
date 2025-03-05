@@ -50,8 +50,8 @@ export default function AuthScreen() {
 
     useEffect(() => {
         const handleDeepLink = async ({ url }: { url: string }) => {
-            if (url) {
-                if (url.startsWith("mindharmony://auth")) {
+            if (url) {console.log(url)
+                if (url.startsWith("exp://10.27.64.61:8082/--/auth")) {
                     await handleSignInWithLink(url);
                 }
             }
