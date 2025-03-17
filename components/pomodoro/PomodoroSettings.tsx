@@ -1,10 +1,10 @@
-import { BottomSheetTextInput, BottomSheetView, TouchableWithoutFeedback, useBottomSheetInternal, useBottomSheetModalInternal } from "@gorhom/bottom-sheet";
-import { useCallback, useEffect } from "react";
-import { KeyboardAvoidingView, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TextInput, TextInputFocusEventData, View } from "react-native";
+import { BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
+import { useEffect } from "react";
+import { StyleSheet, Text } from "react-native";
 
 type SettingsProps = {
-    pomodoroTime: any;
-    setPomodoroTime: any;
+    pomodoroTime: number;
+    setPomodoroTime: (value: number) => void;
     shortRestTime: number;
     setShortRestTime: (value: number) => void;
     longRestTime: number;
@@ -13,87 +13,89 @@ type SettingsProps = {
     setCyclesBeforeLongRest: (value: number) => void;
 };
 
+export default function SettingsComponent({
+    pomodoroTime,
+    setPomodoroTime,
+    shortRestTime,
+    setShortRestTime,
+    longRestTime,
+    setLongRestTime,
+    cyclesBeforeLongRest,
+    setCyclesBeforeLongRest,
+}: SettingsProps) {
 
-export default function SettingsComponent({ pomodoroTime, setPomodoroTime, shortRestTime, setShortRestTime, longRestTime, setLongRestTime, cyclesBeforeLongRest, setCyclesBeforeLongRest }: SettingsProps) {
+    useEffect(() => {
+        // Force re-render when state changes
+    }, [pomodoroTime, shortRestTime, longRestTime, cyclesBeforeLongRest]);
+    const handleInputChange = (text: string, setter: (value: number) => void) => {
+        // console.log(text)
+        const parsedValue = parseInt(text, 10); // Parse input as integer
+        if (!isNaN(parsedValue)) {
+            setter(parsedValue); // Update state with parsed value
+        } else if (text === "") {
+            setter(0); // Set to 0 if input is empty
+        }
+    };
 
 
-    return <BottomSheetView>
-        {/* <View style={styles.settingsContainer}> */}
-        {/* <Text style={styles.settingsText}>Pomodoro Time (min):</Text>
-            <TextInput/> */}
-        {/* <KeyboardAvoidingView> */}
-
-        {/* <TextInput
-                keyboardType="numeric"
+    return (
+        <BottomSheetView style={styles.settingsContainer}>
+            {/* Pomodoro Time Input */}
+            <Text style={styles.settingsText}>Pomodoro Time (min):</Text>
+            <BottomSheetTextInput
                 style={styles.input}
-                value={pomodoroTime}
-                onChangeText={(text) => setPomodoroTime(text)}
-            /> */}
+                keyboardType="numeric"
+                value={String(pomodoroTime)} // Ensure value is always a string
+                onChangeText={(text) => handleInputChange(text, setPomodoroTime)}
+            />
 
+            {/* Short Rest Time Input */}
+            <Text style={styles.settingsText}>Short Rest Time (min):</Text>
+            <BottomSheetTextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={String(shortRestTime)} // Ensure value is always a string
+                onChangeText={(text) => handleInputChange(text, setShortRestTime)}
+            />
 
-        {/* </KeyboardAvoidingView> */}
-        <Text style={styles.settingsText}>Short Rest Time (min):</Text>
-        <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={shortRestTime !== null ? String(shortRestTime) : ""}
-            onChangeText={(text) => {
-                const parsedValue = parseInt(text);
-                if (text === "" || parsedValue >= 1) {
-                    setShortRestTime(parsedValue);
-                }
-            }}
-        />
+            {/* Long Rest Time Input */}
+            <Text style={styles.settingsText}>Long Rest Time (min):</Text>
+            <BottomSheetTextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={String(longRestTime)} // Ensure value is always a string
+                onChangeText={(text) => handleInputChange(text, setLongRestTime)}
+            />
 
-        <Text style={styles.settingsText}>Long Rest Time (min):</Text>
-        <BottomSheetTextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={longRestTime !== null ? String(longRestTime) : ""}
-            onChangeText={(text) => {
-                const parsedValue = parseInt(text);
-                if (text === "" || parsedValue >= 1) {
-                    setLongRestTime(parsedValue);
-                }
-            }}
-        />
-
-
-
-
-        <Text style={styles.settingsText}>Cycles Before Long Rest:</Text>
-        <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={cyclesBeforeLongRest !== null ? String(cyclesBeforeLongRest) : ""}
-            onChangeText={(text) => {
-                const parsedValue = parseInt(text);
-                if (text === "" || parsedValue >= 1) {
-                    setCyclesBeforeLongRest(parsedValue);
-                }
-            }}
-        />
-        {/* </View> */}
-    </BottomSheetView>
+            {/* Cycles Before Long Rest Input */}
+            <Text style={styles.settingsText}>Cycles Before Long Rest:</Text>
+            <BottomSheetTextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={String(cyclesBeforeLongRest)} // Ensure value is always a string
+                onChangeText={(text) => handleInputChange(text, setCyclesBeforeLongRest)}
+            />
+        </BottomSheetView>
+    );
 }
-
 
 const styles = StyleSheet.create({
     settingsContainer: {
-        marginTop: 30,
-        width: '80%',
-        // alignItems: 'center'
+        padding: 20,
     },
     settingsText: {
-        fontSize: 18,
+        fontSize: 16,
         marginBottom: 5,
+        color: "#333",
     },
     input: {
         height: 40,
-        borderColor: '#ccc',
+        borderColor: "#ccc",
         borderWidth: 1,
+        borderRadius: 5,
         marginBottom: 20,
         paddingHorizontal: 10,
-        fontSize: 18,
+        fontSize: 16,
+        backgroundColor: "#fff",
     },
-})
+});

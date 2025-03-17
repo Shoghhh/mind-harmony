@@ -20,14 +20,13 @@ const PomodoroTimer = () => {
   const [cyclesBeforeLongRest, setCyclesBeforeLongRest] = useState<number>(4); // Default to 4 cycles
 
   const intervalId = useRef<number | null>(null);
-
+  const [mode, setMode] = useState("pomodoro");
   const { openSheet, closeSheet, bottomSheetRef } = useBottomSheet();
 
   const getValidTime = (value: number | null, defaultValue: number) => {
     return value ?? defaultValue;
   };
 
-  const [mode, setMode] = useState("pomodoro");
 
   const startTimer = () => {
     if (!pomodoroTime || !shortRestTime || !longRestTime || !cyclesBeforeLongRest) {
@@ -122,7 +121,20 @@ const PomodoroTimer = () => {
 
   const progress = time / ((mode === "pomodoro" ? (pomodoroTime ?? 25) : mode === "shortRest" ? (shortRestTime ?? 5) : (longRestTime ?? 15)) * 60);
 
-console.log(progress, '11111')
+  const openSettingsSheet = () => {
+    openSheet(() => (
+      <SettingsComponent
+        pomodoroTime={pomodoroTime}
+        setPomodoroTime={setPomodoroTime}
+        shortRestTime={shortRestTime}
+        setShortRestTime={setShortRestTime}
+        longRestTime={longRestTime}
+        setLongRestTime={setLongRestTime}
+        cyclesBeforeLongRest={cyclesBeforeLongRest}
+        setCyclesBeforeLongRest={setCyclesBeforeLongRest}
+      />
+    ));
+  };
   return (
     <View style={{ flex: 1, }}>
 
@@ -180,24 +192,10 @@ console.log(progress, '11111')
           <Button title="Skip" onPress={skipTimer} />
         </View>
         <TouchableOpacity
-          onPress={() =>
-            openSheet(() => (
-              <SettingsComponent
-                pomodoroTime={pomodoroTime}
-                setPomodoroTime={setPomodoroTime}
-                shortRestTime={shortRestTime}
-                setShortRestTime={setShortRestTime}
-                longRestTime={longRestTime}
-                setLongRestTime={setLongRestTime}
-                cyclesBeforeLongRest={cyclesBeforeLongRest}
-                setCyclesBeforeLongRest={setCyclesBeforeLongRest}
-              />
-            ))
-          }
+          onPress={openSettingsSheet}
         >
           <Text>Open Settings</Text>
         </TouchableOpacity>
-
       </ScrollView>
     </View>
 
