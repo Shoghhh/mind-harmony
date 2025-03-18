@@ -5,10 +5,12 @@ import { KeyboardAvoidingView, TextInput } from "react-native";
 
 const MyBottomSheet = ({
   bottomSheetRef,
-  component,
+  Component,
+  componentProps,
 }: {
   bottomSheetRef: React.RefObject<BottomSheetModal>;
-  component: any;
+  Component: React.FC<any> | null;
+  componentProps: any;
 }) => {
   const handleSheetChanges = useCallback((index: number) => {
     console.log("Bottom Sheet State:", index);
@@ -18,13 +20,13 @@ const MyBottomSheet = ({
   }, []);
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={bottomSheetRef}
       enablePanDownToClose
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       onChange={handleSheetChanges}
-      index={-1}
+      index={0}
       enableHandlePanningGesture
       snapPoints={['50%']}
       backdropComponent={(props) => (
@@ -44,11 +46,11 @@ const MyBottomSheet = ({
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={{ flex: 1 }}
           >
-            {component()}
+            {Component ? <Component {...componentProps} /> : null}
           </KeyboardAvoidingView>
         </BottomSheetView>
       </TouchableWithoutFeedback>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 };
 
@@ -58,8 +60,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'grey',
   },
   contentContainer: {
-    backgroundColor: 'blue',
-    flex: 1, // Ensure the content container takes up the full height
+    flex: 1,
   },
 });
 

@@ -6,7 +6,7 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 type BottomSheetContextType = {
-    openSheet: (component: () => ReactNode) => void;
+    present: <T>(component: React.FC<T>, props?: T) => void;
     closeSheet: () => void;
     bottomSheetRef: React.RefObject<BottomSheetModal>;
 };
@@ -21,17 +21,16 @@ export const useBottomSheet = () => {
 
 export const BottomSheetProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const bottomSheetRef = useRef<BottomSheetModal>(null);
-    const [component, setComponent] = useState<() => ReactNode>(() => () => null);
+    const [component, setComponent] = useState<React.FC<any> | null>(null);
+    const [componentProps, setComponentProps] = useState<any>({});
 
-
-    const openSheet = useCallback((component: () => React.ReactNode) => {
-        setComponent(() => component);
-        if (bottomSheetRef.current) {
-            bottomSheetRef.current.expand(); // Force presenting the bottom sheet
-            console.log("✅ BottomSheet Presented!");
-        } else {
-            console.log("❌ BottomSheet Ref is NULL, unable to present");
-        }
+    const present = useCallback(<T,>(component: React.FC<T>, props?: T) => {
+        bottomSheetRef.current?.dismiss();
+        setTimeout(() => {
+            setComponent(() => component);
+            setComponentProps(props);
+            bottomSheetRef.current?.present();
+        }, 300);
     }, []);
 
     const closeSheet = useCallback(() => {
@@ -40,10 +39,14 @@ export const BottomSheetProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetContext.Provider value={{ openSheet, closeSheet, bottomSheetRef }}>
+            <BottomSheetContext.Provider value={{ present, closeSheet, bottomSheetRef }}>
                 <BottomSheetModalProvider>
                     {children}
-                    <MyBottomSheet bottomSheetRef={bottomSheetRef} component={component} />
+                    <MyBottomSheet
+                        bottomSheetRef={bottomSheetRef}
+                        Component={component}
+                        componentProps={componentProps}
+                    />
                 </BottomSheetModalProvider>
             </BottomSheetContext.Provider>
         </GestureHandlerRootView>

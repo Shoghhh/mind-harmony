@@ -9,9 +9,6 @@ import SettingsComponent from './PomodoroSettings';
 const PomodoroTimer = () => {
   const [time, setTime] = useState(5); // Default to 25 minutes in seconds
   const [isActive, setIsActive] = useState(false);
-  const [isPomodoro, setIsPomodoro] = useState(true);
-  const [isRest, setIsRest] = useState(false);
-  const [isShortRest, setIsShortRest] = useState(false);
   const [cycles, setCycles] = useState(1);
 
   const [pomodoroTime, setPomodoroTime] = useState<number>(5); // Default 25 minutes
@@ -21,7 +18,7 @@ const PomodoroTimer = () => {
 
   const intervalId = useRef<number | null>(null);
   const [mode, setMode] = useState("pomodoro");
-  const { openSheet, closeSheet, bottomSheetRef } = useBottomSheet();
+  const { present, closeSheet, bottomSheetRef } = useBottomSheet();
 
   const getValidTime = (value: number | null, defaultValue: number) => {
     return value ?? defaultValue;
@@ -122,18 +119,7 @@ const PomodoroTimer = () => {
   const progress = time / ((mode === "pomodoro" ? (pomodoroTime ?? 25) : mode === "shortRest" ? (shortRestTime ?? 5) : (longRestTime ?? 15)) * 60);
 
   const openSettingsSheet = () => {
-    openSheet(() => (
-      <SettingsComponent
-        pomodoroTime={pomodoroTime}
-        setPomodoroTime={setPomodoroTime}
-        shortRestTime={shortRestTime}
-        setShortRestTime={setShortRestTime}
-        longRestTime={longRestTime}
-        setLongRestTime={setLongRestTime}
-        cyclesBeforeLongRest={cyclesBeforeLongRest}
-        setCyclesBeforeLongRest={setCyclesBeforeLongRest}
-      />
-    ));
+    present(SettingsComponent);
   };
   return (
     <View style={{ flex: 1, }}>
@@ -176,7 +162,7 @@ const PomodoroTimer = () => {
 
 
         {/* Progress Bar */}
-        <ProgressBar progress={progress} color={isPomodoro ? '#e74c3c' : isShortRest ? '#f39c12' : '#2ecc71'} style={styles.progressBar} />
+        {/* <ProgressBar progress={progress} color={isPomodoro ? '#e74c3c' : isShortRest ? '#f39c12' : '#2ecc71'} style={styles.progressBar} /> */}
 
         {/* Cycle Info */}
         <Text style={styles.cyclesText}>Cycle: #{cycles}</Text>

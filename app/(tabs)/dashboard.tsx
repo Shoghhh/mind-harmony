@@ -22,22 +22,6 @@ export default function Dashboard() {
   return (
     <View style={styles.container}>
       <Button onPress={handleSignOut} title="Logout" />
-      <TouchableOpacity onPress={() => {
-        console.log('hello')
-        openSheet(() =>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-          >
-            <TextInput
-              keyboardType="numeric"
-              style={{ borderWidth: 1, width: '100%' }}
-              placeholder="Enter text"
-            />
-          </KeyboardAvoidingView>)
-      }}>
-        <Text>Open Sheet</Text>
-      </TouchableOpacity>
     </View>
   );
 }
