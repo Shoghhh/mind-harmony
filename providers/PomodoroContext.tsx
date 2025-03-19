@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-interface SettingsContextType {
+interface PomodoroContextType {
   pomodoroTime: number;
   setPomodoroTime: (time: number) => void;
   shortRestTime: number;
@@ -11,24 +11,24 @@ interface SettingsContextType {
   setCyclesBeforeLongRest: (cycles: number) => void;
 }
 
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+const PomodoroContext = createContext<PomodoroContextType | undefined>(undefined);
 
-export const useSettings = () => {
-  const context = useContext(SettingsContext);
+export const usePomodoro = () => {
+  const context = useContext(PomodoroContext);
   if (!context) {
-    throw new Error("useSettings must be used within a SettingsProvider");
+    throw new Error("usePomodoro must be used within a PomodoroProvider");
   }
   return context;
 };
 
-export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [pomodoroTime, setPomodoroTime] = useState(25);
   const [shortRestTime, setShortRestTime] = useState(5);
   const [longRestTime, setLongRestTime] = useState(15);
   const [cyclesBeforeLongRest, setCyclesBeforeLongRest] = useState(4);
 
   return (
-    <SettingsContext.Provider
+    <PomodoroContext.Provider
       value={{
         pomodoroTime,
         setPomodoroTime,
@@ -41,6 +41,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
       }}
     >
       {children}
-    </SettingsContext.Provider>
+    </PomodoroContext.Provider>
   );
 };

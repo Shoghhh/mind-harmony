@@ -1,4 +1,4 @@
-import { useSettings } from "@/providers/SettingsContext";
+import { usePomodoro } from "@/providers/PomodoroContext";
 import { BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
 import { StyleSheet, Text } from "react-native";
 
@@ -12,7 +12,7 @@ const SettingsComponent: React.FC = () => {
         setLongRestTime,
         cyclesBeforeLongRest,
         setCyclesBeforeLongRest,
-      } = useSettings();
+      } = usePomodoro();
     
     const handleInputChange = (text: string, setter: (value: number) => void) => {
         const parsedValue = parseInt(text, 10);
@@ -58,6 +58,8 @@ const SettingsComponent: React.FC = () => {
                 value={String(cyclesBeforeLongRest)} // Ensure value is always a string
                 onChangeText={(text) => handleInputChange(text, setCyclesBeforeLongRest)}
             />
+
+            
         </BottomSheetView>
     );
 }

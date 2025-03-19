@@ -7,7 +7,7 @@ import { ActivityIndicator, SafeAreaView, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
 import { BottomSheetProvider } from "@/providers/BottomSheetProvider";
-import { SettingsProvider } from "@/providers/SettingsContext";
+import { PomodoroProvider } from "@/providers/PomodoroContext";
 
 export default function RootLayout() {
     const [initializing, setInitializing] = useState(true);
@@ -46,7 +46,7 @@ export default function RootLayout() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <SettingsProvider>
+            <PomodoroProvider>
                 <BottomSheetProvider>
                     <Provider store={store}>
                         <Stack screenOptions={{ headerShown: false }}>
@@ -57,7 +57,7 @@ export default function RootLayout() {
                         <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
                     </Provider>
                 </BottomSheetProvider>
-            </SettingsProvider>
+            </PomodoroProvider>
         </GestureHandlerRootView>
     );
 }

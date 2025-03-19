@@ -5,25 +5,23 @@ import BackgroundTimer from 'react-native-background-timer';
 import { ProgressBar } from 'react-native-paper'; // Add ProgressBar
 import { useBottomSheet } from '@/providers/BottomSheetProvider';
 import SettingsComponent from './PomodoroSettings';
+import { usePomodoro } from '@/providers/PomodoroContext';
 
 const PomodoroTimer = () => {
-  const [time, setTime] = useState(5); // Default to 25 minutes in seconds
+  const [time, setTime] = useState(5);
   const [isActive, setIsActive] = useState(false);
   const [cycles, setCycles] = useState(1);
 
-  const [pomodoroTime, setPomodoroTime] = useState<number>(5); // Default 25 minutes
-  const [shortRestTime, setShortRestTime] = useState<number>(3); // Default 5 minutes
-  const [longRestTime, setLongRestTime] = useState<number>(4); // Default 15 minutes
-  const [cyclesBeforeLongRest, setCyclesBeforeLongRest] = useState<number>(4); // Default to 4 cycles
+  const {
+    pomodoroTime,
+    shortRestTime,
+    longRestTime,
+    cyclesBeforeLongRest,
+  } = usePomodoro();
 
   const intervalId = useRef<number | null>(null);
   const [mode, setMode] = useState("pomodoro");
   const { present, closeSheet, bottomSheetRef } = useBottomSheet();
-
-  const getValidTime = (value: number | null, defaultValue: number) => {
-    return value ?? defaultValue;
-  };
-
 
   const startTimer = () => {
     if (!pomodoroTime || !shortRestTime || !longRestTime || !cyclesBeforeLongRest) {
@@ -38,9 +36,9 @@ const PomodoroTimer = () => {
           setMode((prevMode) => {
             if (prevMode === "pomodoro") {
               setCycles((prevCycles) => {
-                const isLongRest = prevCycles % getValidTime(cyclesBeforeLongRest, 4) === 0;
+                const isLongRest = prevCycles % cyclesBeforeLongRest === 0;
 
-                setTime(isLongRest ? getValidTime(longRestTime, 15) : getValidTime(shortRestTime, 5));
+                setTime(isLongRest ? longRestTime : shortRestTime);
                 setMode(isLongRest ? "longRest" : "shortRest");
 
                 return prevCycles;
@@ -49,7 +47,7 @@ const PomodoroTimer = () => {
             }
 
             if (prevMode === "shortRest" || prevMode === "longRest") {
-              setTime(getValidTime(pomodoroTime, 25));
+              setTime(pomodoroTime);
               setCycles((prevCycle) => prevCycle + 1)
               return "pomodoro";
             }
@@ -80,27 +78,26 @@ const PomodoroTimer = () => {
     setIsActive(false);
     setMode("pomodoro");
     setCycles(1);
-    setTime(getValidTime(pomodoroTime, 25));
+    setTime(pomodoroTime);
   };
-
 
   const skipTimer = () => {
     setMode((prevMode) => {
       if (prevMode === "pomodoro") {
-        if (cycles % getValidTime(cyclesBeforeLongRest, 4) == 0) {
+        if (cycles % cyclesBeforeLongRest == 0) {
           // setCycles(1);
-          setTime(getValidTime(longRestTime, 15));
+          setTime(longRestTime);
           return "longRest";
         } else {
-          setTime(getValidTime(shortRestTime, 5));
+          setTime(shortRestTime);
           return "shortRest";
         }
       } else if (prevMode === "shortRest") {
-        setTime(getValidTime(pomodoroTime, 25));
+        setTime(pomodoroTime);
         setCycles((prevCycles) => prevCycles + 1);
         return "pomodoro";
       } else if (prevMode === "longRest") {
-        setTime(getValidTime(pomodoroTime, 25));
+        setTime(pomodoroTime);
         setCycles((prevCycles) => prevCycles + 1);
         // setCycles(1);
         return "pomodoro";
@@ -116,7 +113,7 @@ const PomodoroTimer = () => {
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   };
 
-  const progress = time / ((mode === "pomodoro" ? (pomodoroTime ?? 25) : mode === "shortRest" ? (shortRestTime ?? 5) : (longRestTime ?? 15)) * 60);
+  // const progress = time / ((mode === "pomodoro" ? (pomodoroTime ?? 25) : mode === "shortRest" ? (shortRestTime ?? 5) : (longRestTime ?? 15)) * 60);
 
   const openSettingsSheet = () => {
     present(SettingsComponent);
@@ -128,21 +125,21 @@ const PomodoroTimer = () => {
 
         <View style={styles.tabContainer}>
           <TouchableOpacity
-            onPress={() => { if (!isActive) { setMode("pomodoro"); setTime(getValidTime(pomodoroTime, 25)); } }}
+            onPress={() => { if (!isActive) { setMode("pomodoro"); setTime(pomodoroTime); } }}
             style={mode === "pomodoro" ? styles.activeTab : styles.tab}
           >
             <Text style={styles.tabText}>Pomodoro</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => { if (!isActive) { setMode("longRest"); setTime(getValidTime(longRestTime, 15)); } }}
+            onPress={() => { if (!isActive) { setMode("longRest"); setTime(longRestTime); } }}
             style={mode === "longRest" ? styles.activeTab : styles.tab}
           >
             <Text style={styles.tabText}>Rest</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => { if (!isActive) { setMode("shortRest"); setTime(getValidTime(shortRestTime, 5)); } }}
+            onPress={() => { if (!isActive) { setMode("shortRest"); setTime(shortRestTime); } }}
             style={mode === "shortRest" ? styles.activeTab : styles.tab}
           >
             <Text style={styles.tabText}>Short Rest</Text>

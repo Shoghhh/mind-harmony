@@ -7,7 +7,7 @@ import { TextInput } from "react-native-gesture-handler";
 
 export default function Dashboard() {
   // const user = auth().currentUser
-  const { openSheet } = useBottomSheet();
+  // const { openSheet } = useBottomSheet();
 
 
   const handleSignOut = async () => {
