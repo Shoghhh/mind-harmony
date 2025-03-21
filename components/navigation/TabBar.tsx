@@ -5,8 +5,6 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
 
-    const primaryColor = '#556B2F';
-    const greyColor = '#8F9779';
     return (
         <View style={styles.tabbar}>
             {state.routes.map((route, index) => {
@@ -48,7 +46,7 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
                         onLongPress={onLongPress}
                         isFocused={isFocused}
                         routeName={route.name}
-                        color={isFocused ? primaryColor : greyColor}
+                        color={isFocused ? '#504ec4' : '#7372c7'} //todo
                         label={label}
                     />
                 )

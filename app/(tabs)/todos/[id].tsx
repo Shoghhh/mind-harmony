@@ -39,104 +39,56 @@ export default function TodoDetail() {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.todoDetails}>
-                <Text style={[globalTextStyles.medium14PrimaryDark, styles.detailLabel]}>
+        <View>
+            <View>
+                <Text style={[globalTextStyles.medium14PrimaryDark,]}>
                     Created:
                 </Text>
-                <Text style={styles.detailValue}>
+                <Text>
                     {moment(todo.createdDate).format('YYYY-MM-DD HH:mm')}
                 </Text>
-
-                <Text style={[globalTextStyles.medium14PrimaryDark, styles.detailLabel]}>
+                <Text style={[globalTextStyles.medium14PrimaryDark,]}>
                     Assigned:
                 </Text>
-                <Text style={styles.detailValue}>
+                <Text>
                     {moment(todo.assignedDate).format('YYYY-MM-DD HH:mm')}
                 </Text>
-
                 {todo.completedDate && (
                     <>
-                        <Text style={[globalTextStyles.medium14PrimaryDark, styles.detailLabel]}>
+                        <Text style={[globalTextStyles.medium14PrimaryDark,]}>
                             Completed:
                         </Text>
-                        <Text style={styles.detailValue}>
+                        <Text>
                             {moment(todo.completedDate).format('YYYY-MM-DD HH:mm')}
                         </Text>
                     </>
                 )}
-
-                <Text style={[globalTextStyles.medium14PrimaryDark, styles.detailLabel]}>
+                <Text style={[globalTextStyles.medium14PrimaryDark,]}>
                     Priority:
                 </Text>
-                <Text style={styles.detailValue}>
+                <Text>
                     {Priority[todo.priority]}
                 </Text>
-
-                <Text style={[globalTextStyles.medium14PrimaryDark, styles.detailLabel]}>
+                <Text style={[globalTextStyles.medium14PrimaryDark,]}>
                     Description:
                 </Text>
-                <Text style={styles.detailValue}>
+                <Text>
                     {todo.description}
                 </Text>
             </View>
-
-            <View style={styles.actions}>
+            <View>
                 <TouchableOpacity
                     onPress={handleToggleComplete}
-                    style={[styles.button, todo.completed && styles.completedButton]}
                 >
-                    <Text style={styles.buttonText}>
+                    <Text>
                         {todo.completed ? 'Mark as Incomplete' : 'Mark as Complete'}
                     </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={handleDelete} style={[styles.button, styles.deleteButton]}>
-                    <Text style={styles.buttonText}>Delete Todo</Text>
+                <TouchableOpacity onPress={handleDelete}>
+                    <Text>Delete Todo</Text>
                 </TouchableOpacity>
             </View>
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: colors.background,
-    },
-    todoDetails: {
-        marginBottom: 30,
-    },
-    detailLabel: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: colors.primary,
-        marginBottom: 5,
-    },
-    detailValue: {
-        fontSize: 16,
-        color: colors.primaryDark,
-        marginBottom: 15,
-    },
-    actions: {
-        marginTop: 20,
-    },
-    button: {
-        backgroundColor: colors.secondary,
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 10,
-        alignItems: 'center',
-    },
-    completedButton: {
-        backgroundColor: 'green',
-    },
-    deleteButton: {
-        backgroundColor: colors.warning,
-    },
-    buttonText: {
-        color: colors.white,
-        fontSize: 16,
-    },
-});

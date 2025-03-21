@@ -1,34 +1,43 @@
-import { AntDesign } from "@expo/vector-icons";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Entypo from '@expo/vector-icons/Entypo';
+import React from "react";
+import { AntDesign, MaterialIcons, FontAwesome5, Ionicons, MaterialCommunityIcons, Entypo } from "@expo/vector-icons";
 import colors from "@/styles/colors";
 
 type IconProps = {
-    color?: string;
-    size?: number
+  color?: string;
+  size?: number;
+  library?: keyof typeof iconComponents;
+  name: string;  
 };
 
-export const icons: Record<string, (props?: IconProps) => React.ReactNode> = {
-    dashboard: (props) => <MaterialIcons name="dashboard" size={26} {...props} />,
-    todos: (props) => <FontAwesome5 name="tasks" size={24} {...props} />,
-    habits: (props) => <Ionicons name="checkmark-done" size={26} {...props} />,
-    // mood: (props) => <MaterialIcons name="mood" size={26} {...props} />,
-    pomodoro: (props) => <Ionicons name="timer-outline" size={24} {...props} />,
-    profile: (props) => <AntDesign name="user" size={26} {...props} />,
-    list: () => <MaterialCommunityIcons name="format-list-bulleted" size={24} color={colors.secondary} />,
-    groupedList: () => <MaterialCommunityIcons name="format-list-group" size={24} color={colors.secondary} />,
-    keyArrowDown: () => <MaterialIcons name="keyboard-arrow-down" size={24} color={colors.secondaryLight} />,
-    keyArrowRight: (props) => <MaterialIcons name="keyboard-arrow-right" size={34} color={colors.secondary} {...props} />,
-    keyArrowLeft: (props) => <MaterialIcons name="keyboard-arrow-left" size={34} color={colors.secondary} {...props} />,
-    add: () => <MaterialIcons name="add" size={32} color={colors.white} />,
-    calendarCheck: () => <FontAwesome5 name="calendar-check" size={20} color={colors.secondary} />,
-    asc: () => <MaterialCommunityIcons name="sort-ascending" size={24} color={colors.secondary} />,
-    desc: () => <MaterialCommunityIcons name="sort-descending" size={24} color={colors.secondary} />,
-    check: () => <Entypo name="check" size={26} color={colors.primary} />,
-    uncheckedCircle: () => <MaterialIcons name="radio-button-unchecked" size={26} color={colors.primary} />,
-    trash: () => <MaterialIcons name="delete" size={24} color={colors.error} />,
-    edit: (props) => <FontAwesome5 name="edit" size={20} color={colors.primary} {...props} />
+const staticIconSettings = {
+  dashboard: { library: "MaterialIcons", name: "dashboard", size: 26, color: "#7372c7" },
+  todos: { library: "FontAwesome5", name: "tasks", size: 24, color: "#7372c7" },
+  habits: { library: "Ionicons", name: "checkmark-done", size: 26, color: "#7372c7" },
+  pomodoro: { library: "Ionicons", name: "timer-outline", size: 24, color: "#7372c7" },
+  profile: { library: "AntDesign", name: "user", size: 26, color: "#7372c7" },
+} as const;
+
+const iconComponents = {
+  AntDesign,
+  MaterialIcons,
+  FontAwesome5,
+  Ionicons,
+  MaterialCommunityIcons,
+  Entypo,
 };
+
+const Icon = ({ name, color = colors.primary[500], size = 24, library }: IconProps) => {
+  if (staticIconSettings[name as keyof typeof staticIconSettings]) {
+    const { library: staticLibrary, name: staticName, size: staticSize, color: staticColor } = staticIconSettings[name as keyof typeof staticIconSettings];
+    const IconComponent = iconComponents[staticLibrary as keyof typeof iconComponents];
+    return <IconComponent name={staticName} size={staticSize} color={staticColor} />;
+  }
+
+  const IconComponent = iconComponents[library || "MaterialIcons"];
+
+  if (!IconComponent) return null;
+
+  return <IconComponent name={name} size={size} color={color} />;
+};
+
+export default Icon;

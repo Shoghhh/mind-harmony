@@ -47,37 +47,37 @@ const globalTextStyles = StyleSheet.create({
   regular12Secondary: {
     fontSize: 12,
     fontWeight: 'normal',
-    color: colors.secondary
+    // color: colors.secondary
   },
 
   regular14PrimaryDark: {
     fontSize: 14,
     fontWeight: 'normal',
-    color: colors.primaryDark,
+    // color: colors.primaryDark,
   },
 
   regular14Primary: {
     fontSize: 14,
     fontWeight: 'normal',
-    color: colors.primary,
+    // color: colors.primary,
   },
 
   regular16PrimaryDark: {
     fontSize: 16,
     fontWeight: 'normal',
-    color: colors.primaryDark,
+    // color: colors.primaryDark,
   },
 
   regular16GrayLight: {
     fontSize: 16,
     fontWeight: 'normal',
-    color: colors.grayLight,
+    // color: colors.grayLight,
   },
 
   medium14PrimaryDark: {
     fontSize: 14,
     fontWeight: 'medium',
-    color: colors.primaryDark,
+    // color: colors.primaryDark,
   },
 
   medium14White: {
@@ -89,13 +89,13 @@ const globalTextStyles = StyleSheet.create({
   medium16Primary: {
     fontSize: 16,
     fontWeight: 'medium',
-    color: colors.primaryDark,
+    // color: colors.primaryDark,
   },
 
   medium16PrimaryDark: {
     fontSize: 16,
     fontWeight: 'medium',
-    color: colors.primaryDark,
+    // color: colors.primaryDark,
   },
 
   medium20White: {
@@ -106,19 +106,19 @@ const globalTextStyles = StyleSheet.create({
   medium20SecondaryDark: {
     fontSize: 20,
     fontWeight: 'medium',
-    color: colors.secondaryDark
+    // color: colors.secondaryDark
   },
 
   medium22PrimaryDark: {
     fontSize: 22,
     fontWeight: 'medium',
-    color: colors.primaryDark,
+    // color: colors.primaryDark,
   },
 
   regular16GrayDark: {
     fontSize: 16,
     fontWeight: 'normal',
-    color: colors.grayDark,
+    // color: colors.grayDark,
   },
 
   bold14White: {
@@ -136,13 +136,13 @@ const globalTextStyles = StyleSheet.create({
   bold18Primary: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.primary,
+    // color: colors.primary,
   },
 
   bold22PrimaryDark: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: colors.primaryDark,
+    // color: colors.primaryDark,
   },
 
 

@@ -1,3 +1,68 @@
+// import React from 'react';
+// import { Box, HStack, VStack, Text, Badge, IconButton, Pressable, useTheme } from 'native-base';
+// import { Swipeable } from 'react-native-gesture-handler';
+// import { MaterialIcons } from '@expo/vector-icons';
+// import moment from 'moment';
+// import { useRouter } from 'expo-router';
+// import { Todo } from '@/types';
+
+// const TodoItem = ({ item, viewMode, onDelete, onToggleComplete } : any) => {
+//     const router = useRouter();
+//     const theme = useTheme();
+//     const { title, createdDate, completed, completedDate, priority, description } = item;
+
+//     const priorityColors = ["purple.400", "yellow.400", "red.400"];
+//     const priorityText = ["Low", "Medium", "High"];
+
+//     const formatDate = (dateStr: string) => {
+//         const date = moment(dateStr);
+//         return date.isSame(moment(), 'day') ? `Today, ${date.format('hh:mm A')}` : date.format('MMM D, hh:mm A');
+//     };
+
+//     return (
+//         <Swipeable
+//             renderLeftActions={() => (
+//                 !completed && viewMode !== 'list' && (
+//                     <Box bg="green.400" px={4} justifyContent="center" roundedLeft="lg">
+//                         <IconButton icon={<MaterialIcons name="check" size={24} color="white" />} onPress={onToggleComplete} />
+//                     </Box>
+//                 )
+//             )}
+//             renderRightActions={() => (
+//                 <Box bg="red.500" px={4} justifyContent="center" roundedRight="lg">
+//                     <IconButton icon={<MaterialIcons name="delete" size={24} color="white" />} onPress={onDelete} />
+//                 </Box>
+//             )}
+//         >
+//             <Pressable
+//                 onPress={() => router.push({ pathname: '/(tabs)/todos/[id]', params: { id: item.id, name: item.title } })}
+//             >
+//                 <Box bg={completed ? "gray.200" : "white"} p={4} m={2} borderRadius="lg" shadow={2}>
+//                     <HStack justifyContent="space-between" alignItems="center">
+//                         <VStack flex={1}>
+//                             <Text fontSize="lg" bold textDecorationLine={completed ? 'line-through' : 'none'}>{title}</Text>
+//                             {description ? <Text fontSize="sm" color="gray.500" numberOfLines={2}>{description}</Text> : null}
+//                         </VStack>
+//                         <Badge colorScheme={priorityColors[priority]}>{priorityText[priority]}</Badge>
+//                     </HStack>
+//                     <HStack justifyContent="space-between" alignItems="center" mt={2}>
+//                         <Text fontSize="xs" color="gray.500">{completed ? `Completed: ${formatDate(completedDate)}` : `Added: ${formatDate(createdDate)}`}</Text>
+//                         <IconButton
+//                             icon={<MaterialIcons name={completed ? "check-circle" : "radio-button-unchecked"} size={24} color={theme.colors.purple[500]} />}
+//                             onPress={onToggleComplete}
+//                         />
+//                     </HStack>
+//                 </Box>
+//             </Pressable>
+//         </Swipeable>
+//     );
+// };
+
+// export default TodoItem;
+
+
+
+//todo
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
@@ -5,7 +70,7 @@ import colors from '@/styles/colors';
 import globalStyles from '@/styles/globalStyles';
 import moment from 'moment';
 import { useRouter } from 'expo-router';
-import { icons } from '@/assets/icons';
+// import { icons } from '@/assets/icons';
 import globalTextStyles from '@/styles/globalTextStyles';
 import { Todo } from '@/types';
 
@@ -23,10 +88,10 @@ const TodoItem = ({
     const router = useRouter()
     const { title, createdDate, completed, completedDate, priority, description } = item;
 
-    const getPriorityColor = (priority: number) => {
-        const colorsMap = [colors.primaryLight, colors.warning, colors.error];
-        return colorsMap[priority] || colors.primaryLight;
-    };
+    // const getPriorityColor = (priority: number) => {
+    //     const colorsMap = [colors.primaryLight, colors.warning, colors.error];
+    //     return colorsMap[priority] || colors.primaryLight;
+    // };
 
     const formatDate = (dateStr: string) => {
         const date = moment(dateStr);
@@ -43,13 +108,13 @@ const TodoItem = ({
 
     const renderLeftActions = () => (
         <TouchableOpacity onPress={onToggleComplete} style={styles.leftAction}>
-            {icons['check']()}
+            {/* {icons['check']()} */}
         </TouchableOpacity>
     );
 
     const renderRightActions = () => (
         <TouchableOpacity onPress={onDelete} style={styles.rightAction}>
-            {icons['trash']()}
+            {/* {icons['trash']()} */}
         </TouchableOpacity>
     );
 
@@ -62,7 +127,7 @@ const TodoItem = ({
             <TouchableOpacity
                 style={[
                     styles.taskItem,
-                    completed && { backgroundColor: colors.backgroundLight },
+                    // completed && { backgroundColor: colors.backgroundLight },
                 ]}
 
                 onPress={() => router.push({
@@ -71,11 +136,11 @@ const TodoItem = ({
                 })}
             >
                 <View style={styles.titlePriorityContainer}>
-                    <Text style={[styles.taskTitle, completed && { textDecorationLine: 'line-through', textDecorationColor: colors.primary, fontWeight: 'light' }]}>{title}</Text>
+                    {/* <Text style={[styles.taskTitle, completed && { textDecorationLine: 'line-through', textDecorationColor: colors.primary, fontWeight: 'light' }]}>{title}</Text> */}
                     <View
                         style={[
                             styles.priorityCircle,
-                            { backgroundColor: getPriorityColor(priority) },
+                            // { backgroundColor: getPriorityColor(priority) },
                         ]}
                     />
                 </View>
@@ -93,7 +158,7 @@ const TodoItem = ({
                             : `Added on: ${formatDate(createdDate)}`}
                     </Text>
                     {<TouchableOpacity onPress={onToggleComplete}>
-                        {icons[completed ? 'check' : 'uncheckedCircle']()}
+                        {/* {icons[completed ? 'check' : 'uncheckedCircle']()} */}
                     </TouchableOpacity>}
                 </View>
             </TouchableOpacity>
@@ -127,7 +192,7 @@ const styles = StyleSheet.create({
     },
     leftAction: {
         flex: 1,
-        backgroundColor: colors.secondaryLight,
+        // backgroundColor: colors.secondaryLight,
         ...globalStyles.justifyCenter,
         ...globalStyles.alignStart,
         paddingLeft: 20,
@@ -135,7 +200,7 @@ const styles = StyleSheet.create({
     },
     rightAction: {
         flex: 1,
-        backgroundColor: colors.lightError,
+        // backgroundColor: colors.lightError,
         ...globalStyles.justifyCenter,
         ...globalStyles.alignEnd,
         paddingRight: 20,

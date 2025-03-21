@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import Dropdown from '@/components/Dropdown';
-import colors from '@/styles/colors';
 import globalTextStyles from '@/styles/globalTextStyles';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Priority, PriorityLabels } from '@/utils/constants';
@@ -26,7 +24,7 @@ export default function AddTodo() {
   const priorityOptions = Object.entries(PriorityLabels).map(([key, label]) => ({
     value: Number(key) as Priority,
     label,
-}))
+  }))
 
   const existingTodo = useSelector((state: RootState) =>
     id ? state.todos.todos.find((todo) => todo.id === parseInt(id as string)) : null
@@ -76,28 +74,25 @@ export default function AddTodo() {
   };
 
   return (
-    <View style={styles.container}>
+    <View>
       <TextInput
-        style={styles.input}
         placeholder="Title"
         value={title}
         onChangeText={setTitle}
       />
       <TextInput
-        style={[styles.input, styles.multilineInput]}
         placeholder="Description"
         value={description}
         onChangeText={setDescription}
         multiline
         numberOfLines={4}
       />
-      <Dropdown
+      {/* <Dropdown
         options={priorityOptions}
         selectedOption={PriorityLabels[priority]}
         onSelect={setPriority}
-        style={styles.dropdown}
-      />
-      <TouchableOpacity onPress={() => setDatePickerVisibility(true)} style={styles.datePickerButton}>
+      /> */}
+      <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
         <Text style={globalTextStyles.medium16Primary}>
           Assigned Date: {assignedDate.toISOString().split('T')[0]}
         </Text>
@@ -112,41 +107,9 @@ export default function AddTodo() {
         minimumDate={new Date()}
       />
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSaveTodo}>
+      <TouchableOpacity onPress={handleSaveTodo}>
         <Text style={globalTextStyles.medium14White}>Save To do</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: colors.background },
-  input: {
-    borderColor: colors.grayLight,
-    borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
-    marginVertical: 10,
-    backgroundColor: colors.white,
-  },
-  multilineInput: {
-    textAlignVertical: 'top',
-    height: 100,
-  },
-  dropdown: {
-    marginVertical: 10,
-  },
-  datePickerButton: {
-    marginVertical: 10,
-    padding: 10,
-    backgroundColor: colors.secondaryLight,
-    borderRadius: 5,
-  },
-  saveButton: {
-    marginTop: 20,
-    backgroundColor: colors.secondary,
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-});

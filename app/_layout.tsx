@@ -1,3 +1,4 @@
+import '../global.css';
 import { auth } from "@/firebase";
 import store from "@/store/store";
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -8,6 +9,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
 import { BottomSheetProvider } from "@/providers/BottomSheetProvider";
 import { PomodoroProvider } from "@/providers/PomodoroContext";
+import Background from "@/providers/Background";
+import { NativeBaseProvider } from "native-base";
+import { customTheme } from '@/styles/theme';
 
 export default function RootLayout() {
     const [initializing, setInitializing] = useState(true);
@@ -45,19 +49,23 @@ export default function RootLayout() {
     }
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-            <PomodoroProvider>
-                <BottomSheetProvider>
-                    <Provider store={store}>
-                        <Stack screenOptions={{ headerShown: false }}>
-                            <Stack.Screen name="auth" />
-                            <Stack.Screen name="(tabs)" />
-                            <Stack.Screen name="+not-found" />
-                        </Stack>
-                        <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
-                    </Provider>
-                </BottomSheetProvider>
-            </PomodoroProvider>
-        </GestureHandlerRootView>
+            <NativeBaseProvider theme={customTheme}>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                    <PomodoroProvider>
+                        <BottomSheetProvider>
+                            <Provider store={store}>
+                                <Background>
+                                    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
+                                        <Stack.Screen name="auth" />
+                                        <Stack.Screen name="(tabs)" />
+                                        <Stack.Screen name="+not-found" />
+                                    </Stack>
+                                    <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
+                                </Background>
+                            </Provider>
+                        </BottomSheetProvider>
+                    </PomodoroProvider>
+                </GestureHandlerRootView>
+            </NativeBaseProvider>
     );
 }
