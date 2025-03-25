@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { Audio } from 'expo-av';
 import BackgroundTimer from 'react-native-background-timer';
-import { ProgressBar } from 'react-native-paper'; // Add ProgressBar
 import { useBottomSheet } from '@/providers/BottomSheetProvider';
 import SettingsComponent from './PomodoroSettings';
 import { usePomodoro } from '@/providers/PomodoroContext';

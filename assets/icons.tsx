@@ -10,11 +10,11 @@ type IconProps = {
 };
 
 const staticIconSettings = {
-  dashboard: { library: "MaterialIcons", name: "dashboard", size: 26, color: "#7372c7" },
-  todos: { library: "FontAwesome5", name: "tasks", size: 24, color: "#7372c7" },
-  habits: { library: "Ionicons", name: "checkmark-done", size: 26, color: "#7372c7" },
-  pomodoro: { library: "Ionicons", name: "timer-outline", size: 24, color: "#7372c7" },
-  profile: { library: "AntDesign", name: "user", size: 26, color: "#7372c7" },
+  dashboard: { library: "MaterialIcons", name: "dashboard", size: 26 },
+  todos: { library: "FontAwesome5", name: "tasks", size: 24 },
+  habits: { library: "Ionicons", name: "checkmark-done", size: 26 },
+  pomodoro: { library: "Ionicons", name: "timer-outline", size: 24 },
+  profile: { library: "AntDesign", name: "user", size: 26 },
 } as const;
 
 const iconComponents = {
@@ -28,9 +28,9 @@ const iconComponents = {
 
 const Icon = ({ name, color = colors.primary[500], size = 24, library }: IconProps) => {
   if (staticIconSettings[name as keyof typeof staticIconSettings]) {
-    const { library: staticLibrary, name: staticName, size: staticSize, color: staticColor } = staticIconSettings[name as keyof typeof staticIconSettings];
+    const { library: staticLibrary, name: staticName, size: staticSize,} = staticIconSettings[name as keyof typeof staticIconSettings];
     const IconComponent = iconComponents[staticLibrary as keyof typeof iconComponents];
-    return <IconComponent name={staticName} size={staticSize} color={staticColor} />;
+    return <IconComponent name={staticName} size={staticSize} color={color}/>;
   }
 
   const IconComponent = iconComponents[library || "MaterialIcons"];

@@ -1,4 +1,5 @@
 import Icon from '@/assets/icons';
+import AnimatedProgress from '@/components/todos/AnimatedProgress';
 import TodoItem from '@/components/todos/TodoItem';
 import { toggleTodoCompletion } from '@/features/todos/todosSlice';
 import { deleteTodo } from '@/features/todos/todosThunks';
@@ -10,7 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import moment from 'moment';
 import { Box, CheckIcon, ChevronDownIcon, Progress, Select } from 'native-base';
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -219,15 +220,7 @@ export default function TodoList() {
             </View>
 
             <Box className="flex flex-row justify-between items-center relative">
-                <Progress
-                    value={completionProgress}
-                    width={"100%"}
-                    height="20px"
-                    _filledTrack={{
-                        bg: "primary.600",
-                    }}
-                    bg="primary.200"
-                />
+                <AnimatedProgress value={completionProgress}/>
                 <Text className="absolute z-10 left-1/2 -translate-x-4 text-white font-bold">
                     {Math.round(completionProgress)}%
                 </Text>

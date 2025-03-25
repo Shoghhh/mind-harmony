@@ -2,6 +2,7 @@ import { View, StyleSheet } from 'react-native'
 import React from 'react'
 import TabBarButton from './TabBarButton';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import colors from '@/styles/colors';
 
 const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
 
@@ -46,7 +47,7 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
                         onLongPress={onLongPress}
                         isFocused={isFocused}
                         routeName={route.name}
-                        color={isFocused ? '#504ec4' : '#7372c7'} //todo
+                        color={colors.primary[isFocused ? 550 : 600]}
                         label={label}
                     />
                 )

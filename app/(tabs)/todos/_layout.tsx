@@ -3,7 +3,7 @@ import Header from "@/components/navigation/Header";
 
 export default function TodosLayout() {
     return (
-        <Stack screenOptions={{ contentStyle: {backgroundColor: 'transparent'} }} >
+        <Stack screenOptions={{ contentStyle: {backgroundColor: 'transparent'}, animation: "none", }} >
             <Stack.Screen name="index" options={{ header: () => <Header title={''} />, }} />
             <Stack.Screen name="add" options={({ route }: any) => {
                 const { id } = route.params;
