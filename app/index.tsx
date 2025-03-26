@@ -1,8 +1,15 @@
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
 import { View, Button, StyleSheet, Text } from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
+
+  useEffect(() => {
+    setTimeout(() => {
+      router.push('/(tabs)/dashboard')
+    }, 1000);
+  }, [])
 
   return (
     <View style={styles.container}>

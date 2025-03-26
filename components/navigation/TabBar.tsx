@@ -2,11 +2,19 @@ import { View, StyleSheet } from 'react-native'
 import React from 'react'
 import TabBarButton from './TabBarButton';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import colors from '@/styles/colors';
+import { ParamListBase, TabNavigationState } from '@react-navigation/native';
 
-const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
-
-    const primaryColor = '#556B2F';
-    const greyColor = '#8F9779';
+const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation, }) => {
+    const currentRoute = state.routes[state.index];
+    const nestedState = currentRoute.state as TabNavigationState<ParamListBase> | undefined;
+    const currentRouteName = nestedState?.routes?.[nestedState.index]?.name || currentRoute.name;
+    
+    const hiddenRoutes = ['add', '[id]'];
+    
+    if (hiddenRoutes.includes(currentRouteName)) {
+        return null;
+    }
     return (
         <View style={styles.tabbar}>
             {state.routes.map((route, index) => {
@@ -48,7 +56,7 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
                         onLongPress={onLongPress}
                         isFocused={isFocused}
                         routeName={route.name}
-                        color={isFocused ? primaryColor : greyColor}
+                        color={colors.primary[isFocused ? 550 : 600]}
                         label={label}
                     />
                 )

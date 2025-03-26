@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Button, KeyboardAvoidingView, Linking, StyleSheet, Text, TextInput, View } from "react-native";
-import globalTextStyles from "@/styles/globalTextStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink } from 'firebase/auth';
 import { auth } from "@/firebase";
@@ -50,8 +49,8 @@ export default function AuthScreen() {
 
     useEffect(() => {
         const handleDeepLink = async ({ url }: { url: string }) => {
-            if (url) {
-                if (url.startsWith("mindharmony://auth")) {
+            if (url) {console.log(url)
+                if (url.startsWith("exp://10.27.64.61:8082/--/auth")) {
                     await handleSignInWithLink(url);
                 }
             }
@@ -65,7 +64,7 @@ export default function AuthScreen() {
     return (
         <View style={styles.container}>
             <KeyboardAvoidingView behavior="padding">
-                <Text style={[globalTextStyles.bold22PrimaryDark, { textAlign: 'center' }]}>Sign in</Text>
+                <Text style={[ { textAlign: 'center' }]}>Sign in</Text>
                 <Text>Email</Text>
                 <TextInput
                     value={email}

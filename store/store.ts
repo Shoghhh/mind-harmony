@@ -1,8 +1,11 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import todosReducer from '@/features/todos/todosSlice';
+import uiReducer from '@/features/uiSlice'
+
 export const store = configureStore({
     reducer: {
         todos: todosReducer,
+        ui: uiReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

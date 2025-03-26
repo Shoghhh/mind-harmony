@@ -1,10 +1,8 @@
 import colors from '@/styles/colors';
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import globalTextStyles from '@/styles/globalTextStyles';
 import { router } from 'expo-router';
-import { icons } from '@/assets/icons';
+import Icon from '@/assets/icons';
 import globalStyles from '@/styles/globalStyles';
 
 interface HeaderProps {
@@ -17,18 +15,18 @@ interface HeaderProps {
 const Header = memo(({ title, showBack, showEdit, leftAction }: HeaderProps) => {
 
     return (
-        <LinearGradient colors={[colors.secondary, colors.background,]} style={styles.header}>
+        <View  style={styles.header}>
             {showBack && <TouchableOpacity onPress={() => router.back()} style={[styles.leftSection, showEdit ? { bottom: 10 } : {}]}>
-                {icons['keyArrowLeft']({ color: colors.secondaryDark, size: 45 })}
+                <Icon name="keyboard-arrow-left" library="MaterialIcons" color={colors.primary[525]} size={45} />
             </TouchableOpacity>}
             <View style={styles.centerSection}>
-                <Text style={globalTextStyles.medium20SecondaryDark}>{title}</Text>
-                {showEdit && <Text style={globalTextStyles.regular12Secondary}>Title</Text>}
+                <Text className='text-2xl text-primary-525 font-medium' >{title}</Text>
+                {showEdit && <Text >Title</Text>}
             </View>
             {showEdit && <TouchableOpacity onPress={leftAction} style={styles.rightSection}>
-                {icons['edit']({ color: colors.secondaryDark, size: 24 })}
+                <Icon name="edit" library="FontAwesome5" color={colors.primary[525]} size={24} />
             </TouchableOpacity>}
-        </LinearGradient>
+        </View>
     );
 });
 
@@ -37,7 +35,7 @@ Header.displayName = "HeaderComponent";
 const styles = StyleSheet.create({
     header: {
         ...globalStyles.rowSpaceBetween,
-        backgroundColor: colors.secondaryLight,
+        // backgroundColor: colors.secondary,
         paddingTop: 60,
         paddingBottom: 10,
         paddingHorizontal: 20,
