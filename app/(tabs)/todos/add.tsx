@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Platform, TextInput } from 'react-native';
+import { Box, Button, Text, VStack, HStack, Pressable, Badge, ScrollView, KeyboardAvoidingView } from 'native-base';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import globalTextStyles from '@/styles/globalTextStyles';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Priority, PriorityLabels } from '@/utils/constants';
 import { Todo } from '@/types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addTodo, updateTodo } from '@/features/todos/todosThunks';
 import { AppDispatch, RootState } from '@/store/store';
-import { useSelector } from 'react-redux';
 
 export default function AddTodo() {
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>()
+  const dispatch = useDispatch<AppDispatch>();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState(Priority.Low);
@@ -21,10 +20,11 @@ export default function AddTodo() {
   const parsedDate = initialDate ? new Date(initialDate) : new Date();
   const [assignedDate, setAssignedDate] = useState(parsedDate);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
   const priorityOptions = Object.entries(PriorityLabels).map(([key, label]) => ({
     value: Number(key) as Priority,
     label,
-  }))
+  }));
 
   const existingTodo = useSelector((state: RootState) =>
     id ? state.todos.todos.find((todo) => todo.id === parseInt(id as string)) : null
@@ -38,78 +38,151 @@ export default function AddTodo() {
       setAssignedDate(new Date(existingTodo.assignedDate));
     }
   }, [existingTodo]);
+
   const handleSaveTodo = () => {
     if (!title.trim()) {
-      Alert.alert('Validation Error', 'Title is required!');
+      alert('Task name is required');
       return;
     }
 
-    if (!description.trim()) {
-      Alert.alert('Validation Error', 'Description is required!');
-      return;
-    }
+    const todoId = id ? parseInt(id.toString()) : Date.now();
+    const formattedAssignedDate = `${assignedDate.getFullYear()}-${(assignedDate.getMonth() + 1).toString().padStart(2, '0')}-${assignedDate.getDate().toString().padStart(2, '0')}`;
 
-    const newTodo: Todo = {
-      id: id ? parseInt(id as string) : Date.now(),
+    const updatedTodo: Todo = {
+      id: todoId,
       title,
       description,
       priority,
-      createdDate: new Date().toISOString(),
-      assignedDate: assignedDate.toISOString().split('T')[0],
-      completed: false,
+      createdDate: existingTodo?.createdDate || new Date().toISOString(),
+      assignedDate: formattedAssignedDate,
+      completed: existingTodo?.completed || false,
+      completedDate: existingTodo?.completedDate,
     };
 
-    const navigate = () => router.push({ pathname: '/(tabs)/todos', params: { date: newTodo.assignedDate } })
+    const navigate = () => router.push({
+      pathname: '/(tabs)/todos',
+      params: { date: updatedTodo.assignedDate }
+    });
 
     if (id) {
-      dispatch(updateTodo(newTodo.id, newTodo)).finally(navigate);
+      dispatch(updateTodo(updatedTodo.id, updatedTodo))
+        .then(navigate)
+        .catch((error: string) => console.error('Update failed:', error));
     } else {
-      dispatch(addTodo(newTodo)).finally(navigate);
+      dispatch(addTodo(updatedTodo))
+        .then(navigate)
+        .catch((error: string) => console.error('Creation failed:', error));
     }
   };
 
-  const handleDateChange = (date: Date) => {
-    setAssignedDate(date);
-    setDatePickerVisibility(false);
-  };
-
   return (
-    <View>
-      <TextInput
-        placeholder="Title"
-        value={title}
-        onChangeText={setTitle}
-      />
-      <TextInput
-        placeholder="Description"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-        numberOfLines={4}
-      />
-      {/* <Dropdown
-        options={priorityOptions}
-        selectedOption={PriorityLabels[priority]}
-        onSelect={setPriority}
-      /> */}
-      <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
-        <Text style={globalTextStyles.medium16Primary}>
-          Assigned Date: {assignedDate.toISOString().split('T')[0]}
-        </Text>
-      </TouchableOpacity>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <ScrollView flex={1} px={4} py={6} >
+        <VStack space={6}>
+          <Box>
+            <Text fontSize="md" color="primary.600" >
+              Task Name
+            </Text>
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              className="text-2xl rounded-none border-0 border-b-2 border-primary-600 text-primary-525 h-[60]"
+              style={{ marginTop: 0, margin: 0 }}
+            />
+          </Box>
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        date={assignedDate}
-        onConfirm={handleDateChange}
-        onCancel={() => setDatePickerVisibility(false)}
-        minimumDate={new Date()}
-      />
+          <Box>
+            <Text fontSize="md" color="primary.600" marginBottom={5} >
+              Select Priority
+            </Text>
+            <HStack space={3}>
+              {priorityOptions.map(({ value, label }) => (
+                <Pressable key={value} onPress={() => setPriority(value)}>
+                  <Badge
+                    px={6}
+                    py={2}
+                    borderRadius="md"
+                    colorScheme={priority === value ? 'purple.600' : 'primary.525'}
+                    borderWidth={1}
+                    borderColor={"primary.600"}
+                    variant={priority === value ? 'solid' : 'subtle'}
+                    _text={{
+                      fontSize: 'lg',
+                      fontWeight: 'semibold',
+                    }}
+                  >
+                    {label}
+                  </Badge>
+                </Pressable>
+              ))}
+            </HStack>
+          </Box>
 
-      <TouchableOpacity onPress={handleSaveTodo}>
-        <Text style={globalTextStyles.medium14White}>Save To do</Text>
-      </TouchableOpacity>
-    </View>
+          <Box>
+            <Text fontSize="md" color="primary.600">
+              Assigned Date
+            </Text>
+            <Pressable onPress={() => setDatePickerVisibility(true)} className="text-xl rounded-none border-0 border-b-2 border-primary-600 h-[40] mt-[15]">
+              <Text fontSize="2xl" color="primary.525">
+                {`${assignedDate.getFullYear()}-${(assignedDate.getMonth() + 1).toString().padStart(2, '0')}-${assignedDate.getDate().toString().padStart(2, '0')}`}
+              </Text>
+            </Pressable>
+          </Box>
+          <Box>
+            <Text fontSize="md" color="primary.600" >
+              Task Description
+            </Text>
+            <TextInput
+              value={description}
+              onChangeText={setDescription}
+              className="text-2xl rounded-none border-1 border-b-2 border-primary-600 text-primary-525 min-h-[50]"
+              multiline
+              numberOfLines={6}
+            />
+          </Box>
+          <Button
+            bg="primary.600"
+            borderRadius="lg"
+            py={4}
+            mt={10}
+            _text={{ fontSize: 'md', fontWeight: 'bold' }}
+            onPress={handleSaveTodo}
+            _pressed={{
+              bg: 'primary.600',
+              opacity: 0.8,
+              _text: {
+                color: 'white'
+              }
+            }}
+            _disabled={{
+              bg: 'primary.500',
+              opacity: 0.5
+            }}
+          >
+            {id ? "Save" : 'Create Task'}
+          </Button>
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            display="spinner"
+            date={assignedDate}
+            onConfirm={(date) => {
+
+              const utcDate = new Date(Date.UTC(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+              ));
+              setAssignedDate(utcDate);
+              setDatePickerVisibility(false);
+            }}
+            onCancel={() => setDatePickerVisibility(false)}
+          />
+        </VStack>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
-};
+}

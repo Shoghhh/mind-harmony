@@ -49,23 +49,23 @@ export default function RootLayout() {
     }
 
     return (
-            <NativeBaseProvider theme={customTheme}>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                    <PomodoroProvider>
-                        <BottomSheetProvider>
-                            <Provider store={store}>
-                                <Background>
-                                    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
-                                        <Stack.Screen name="auth" />
-                                        <Stack.Screen name="(tabs)" />
-                                        <Stack.Screen name="+not-found" />
-                                    </Stack>
-                                    <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
-                                </Background>
-                            </Provider>
-                        </BottomSheetProvider>
-                    </PomodoroProvider>
-                </GestureHandlerRootView>
-            </NativeBaseProvider>
+        <NativeBaseProvider theme={customTheme}>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <PomodoroProvider>
+                    <BottomSheetProvider>
+                        <Provider store={store}>
+                            <Background>
+                                <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
+                                    <Stack.Screen name="auth" />
+                                    <Stack.Screen name="(tabs)" />
+                                    <Stack.Screen name="+not-found" />
+                                </Stack>
+                                <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
+                            </Background>
+                        </Provider>
+                    </BottomSheetProvider>
+                </PomodoroProvider>
+            </GestureHandlerRootView>
+        </NativeBaseProvider>
     );
 }

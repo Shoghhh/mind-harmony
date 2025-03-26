@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Button, KeyboardAvoidingView, Linking, StyleSheet, Text, TextInput, View } from "react-native";
-import globalTextStyles from "@/styles/globalTextStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink } from 'firebase/auth';
 import { auth } from "@/firebase";
@@ -65,7 +64,7 @@ export default function AuthScreen() {
     return (
         <View style={styles.container}>
             <KeyboardAvoidingView behavior="padding">
-                <Text style={[globalTextStyles.bold22PrimaryDark, { textAlign: 'center' }]}>Sign in</Text>
+                <Text style={[ { textAlign: 'center' }]}>Sign in</Text>
                 <Text>Email</Text>
                 <TextInput
                     value={email}

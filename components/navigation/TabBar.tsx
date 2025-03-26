@@ -3,9 +3,18 @@ import React from 'react'
 import TabBarButton from './TabBarButton';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import colors from '@/styles/colors';
+import { ParamListBase, TabNavigationState } from '@react-navigation/native';
 
-const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
-
+const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation, }) => {
+    const currentRoute = state.routes[state.index];
+    const nestedState = currentRoute.state as TabNavigationState<ParamListBase> | undefined;
+    const currentRouteName = nestedState?.routes?.[nestedState.index]?.name || currentRoute.name;
+    
+    const hiddenRoutes = ['add', '[id]'];
+    
+    if (hiddenRoutes.includes(currentRouteName)) {
+        return null;
+    }
     return (
         <View style={styles.tabbar}>
             {state.routes.map((route, index) => {
