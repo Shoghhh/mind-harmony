@@ -174,7 +174,7 @@ export default function TodoList() {
 
         switch (sortOption) {
             case Sort.CreatedDate:
-                return (a, b) => direction * (getDateValue(a.createdDate) - getDateValue(b.createdDate));
+                return (a, b) => direction * (getDateValue(a.createdAt) - getDateValue(b.createdAt));
 
             case Sort.CompletedDate:
                 return (a, b) => {
@@ -191,7 +191,7 @@ export default function TodoList() {
                 return (a, b) => direction * (getDateValue(a.assignedDate) - getDateValue(b.assignedDate));
 
             default:
-                return (a, b) => direction * (getDateValue(a.createdDate) - getDateValue(b.createdDate));
+                return (a, b) => direction * (getDateValue(a.createdAt) - getDateValue(b.createdAt));
         }
     };
     const updateCompletionProgress = () => {

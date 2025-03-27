@@ -1,240 +1,268 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { Audio } from 'expo-av';
-import BackgroundTimer from 'react-native-background-timer';
+import React, { useCallback } from 'react';
+import {
+  Box,
+  Text,
+  Button,
+  ScrollView,
+  Pressable,
+  useTheme,
+  HStack,
+  VStack,
+  Icon,
+  useColorModeValue
+} from 'native-base';
+import { MaterialIcons, Feather } from '@expo/vector-icons';
 import { useBottomSheet } from '@/providers/BottomSheetProvider';
 import SettingsComponent from './PomodoroSettings';
 import { usePomodoro } from '@/providers/PomodoroContext';
+import ProgressIndicator from './ProgressIndicator';
+import { useDispatch, useSelector } from 'react-redux';
+import TodoSelectionComponent from './TodoSelectionComponent';
+import { RootState } from '@/store/store';
+import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
+import { useTimeTracking } from '@/hooks/useTimeTracking';
+import { useTimerFeedback } from '@/hooks/useTimerFeedback';
+import { Alert } from 'react-native';
+
+type TimerMode = "pomodoro" | "shortRest" | "longRest";
 
 const PomodoroTimer = () => {
-  const [time, setTime] = useState(5);
-  const [isActive, setIsActive] = useState(false);
-  const [cycles, setCycles] = useState(1);
+  const { colors } = useTheme();
+  const { present } = useBottomSheet();
 
   const {
     pomodoroTime,
     shortRestTime,
     longRestTime,
     cyclesBeforeLongRest,
+    selectedTodoId,
+    setSelectedTodoId
   } = usePomodoro();
 
-  const intervalId = useRef<number | null>(null);
-  const [mode, setMode] = useState("pomodoro");
-  const { present, closeSheet, bottomSheetRef } = useBottomSheet();
+  const todo = useSelector((state: RootState) =>
+    state.todos.todos.find((item) => item.id === selectedTodoId)
+  );
 
-  const startTimer = () => {
-    if (!pomodoroTime || !shortRestTime || !longRestTime || !cyclesBeforeLongRest) {
-      return;
-    }
+  const { playSound, triggerFeedback } = useTimerFeedback();
+  const dispatch = useDispatch()
 
-    setIsActive(true);
+  const {
+    state,
+    startTimer,
+    stopTimer,
+    resetTimer,
+    skipTimer,
+    changeMode,
+    handleTodoSelection,
+    completeCurrentTodo
+  } = usePomodoroTimer({
+    pomodoroTime,
+    shortRestTime,
+    longRestTime,
+    cyclesBeforeLongRest,
+    onModeTransition: () => {
+      playSound();
+      triggerFeedback();
+    },
+    selectedTodoId,
+    setSelectedTodoId,
+    dispatch
+  });
 
-    intervalId.current = BackgroundTimer.setInterval(() => {
-      setTime((prevTime) => {
-        if (prevTime === 0) {
-          setMode((prevMode) => {
-            if (prevMode === "pomodoro") {
-              setCycles((prevCycles) => {
-                const isLongRest = prevCycles % cyclesBeforeLongRest === 0;
+  useTimeTracking(state.isActive, state.mode, todo?.id);
 
-                setTime(isLongRest ? longRestTime : shortRestTime);
-                setMode(isLongRest ? "longRest" : "shortRest");
+  // Color scheme
+  const cardBg = useColorModeValue('#ffffff9A', 'primary.900');
+  const textColor = useColorModeValue('primary.900', 'primary.100');
+  const secondaryText = useColorModeValue('primary.600', 'primary.300');
 
-                return prevCycles;
-              });
-              return prevMode;
-            }
-
-            if (prevMode === "shortRest" || prevMode === "longRest") {
-              setTime(pomodoroTime);
-              setCycles((prevCycle) => prevCycle + 1)
-              return "pomodoro";
-            }
-
-            return prevMode;
-          });
-
-          return prevTime;
-        }
-
-        return prevTime - 1;
-      });
-    }, 1000);
-  };
-
-
-  const stopTimer = () => {
-    if (intervalId.current) {
-      BackgroundTimer.clearInterval(intervalId.current);
-    }
-    setIsActive(false);
-  };
-
-  const resetTimer = () => {
-    if (intervalId.current) {
-      BackgroundTimer.clearInterval(intervalId.current);
-    }
-    setIsActive(false);
-    setMode("pomodoro");
-    setCycles(1);
-    setTime(pomodoroTime);
-  };
-
-  const skipTimer = () => {
-    setMode((prevMode) => {
-      if (prevMode === "pomodoro") {
-        if (cycles % cyclesBeforeLongRest == 0) {
-          // setCycles(1);
-          setTime(longRestTime);
-          return "longRest";
-        } else {
-          setTime(shortRestTime);
-          return "shortRest";
-        }
-      } else if (prevMode === "shortRest") {
-        setTime(pomodoroTime);
-        setCycles((prevCycles) => prevCycles + 1);
-        return "pomodoro";
-      } else if (prevMode === "longRest") {
-        setTime(pomodoroTime);
-        setCycles((prevCycles) => prevCycles + 1);
-        // setCycles(1);
-        return "pomodoro";
-      }
-
-      return prevMode;
-    });
-  };
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-  };
-
-  // const progress = time / ((mode === "pomodoro" ? (pomodoroTime ?? 25) : mode === "shortRest" ? (shortRestTime ?? 5) : (longRestTime ?? 15)) * 60);
-
-  const openSettingsSheet = () => {
+  const openSettingsSheet = useCallback(() => {
     present(SettingsComponent);
-  };
+  }, [present]);
+
+  const openTodosSelectionSheet = useCallback(() => {
+    present(() => <TodoSelectionComponent onSelect={handleTodoSelection} />);
+  }, [present]);
+
   return (
-    <View style={{ flex: 1, }}>
+    <Box flex={1} mb={70}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }}>
+        <VStack space={4} alignItems="center" pt={6} px={6}>
+          <HStack space={3} bg={cardBg} p={1.5} rounded="xl" shadow={1}>
+            {(['pomodoro', 'shortRest', 'longRest'] as TimerMode[]).map((mode) => (
+              <Pressable
+                key={mode}
+                onPress={() => !state.isActive && changeMode(mode)}
+                bg={state.mode === mode ? colors.primary[600] : 'transparent'}
+                px={4}
+                py={2}
+                rounded="lg"
+                _pressed={{ opacity: 0.8 }}
+              >
+                <Text fontSize="sm" fontWeight="medium" color={state.mode === mode ? 'white' : secondaryText}>
+                  {mode === 'pomodoro' ? 'Focus' :
+                    mode === 'shortRest' ? 'Short Break' : 'Long Break'}
+                </Text>
+              </Pressable>
+            ))}
+          </HStack>
 
-      <ScrollView style={styles.container} contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}>
+          <Box bg={cardBg} p={2} rounded="full" shadow={3}>
+            <ProgressIndicator
+              currentTime={state.time}
+              totalTime={state.mode === 'pomodoro' ? pomodoroTime :
+                state.mode === 'shortRest' ? shortRestTime : longRestTime}
+              mode={state.mode}
+              cycles={state.cycles}
+            />
+          </Box>
 
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            onPress={() => { if (!isActive) { setMode("pomodoro"); setTime(pomodoroTime); } }}
-            style={mode === "pomodoro" ? styles.activeTab : styles.tab}
-          >
-            <Text style={styles.tabText}>Pomodoro</Text>
-          </TouchableOpacity>
+          <Text color={secondaryText} textAlign="center">
+            {state.mode === 'pomodoro' ? 'Time to focus!' : 'Take a well-deserved break'}
+          </Text>
 
-          <TouchableOpacity
-            onPress={() => { if (!isActive) { setMode("longRest"); setTime(longRestTime); } }}
-            style={mode === "longRest" ? styles.activeTab : styles.tab}
-          >
-            <Text style={styles.tabText}>Rest</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => { if (!isActive) { setMode("shortRest"); setTime(shortRestTime); } }}
-            style={mode === "shortRest" ? styles.activeTab : styles.tab}
-          >
-            <Text style={styles.tabText}>Short Rest</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text
-          style={[
-            styles.timerText,
-            mode === "pomodoro" ? styles.pomodoroColor :
-              mode === "shortRest" ? styles.shortRestColor :
-                styles.restColor
-          ]}
-        >
-          {formatTime(time)}
+          {selectedTodoId && todo && (
+  <Pressable
+    onPress={openTodosSelectionSheet}
+    bg={cardBg}
+    p={3}
+    rounded="xl"
+    w="full"
+    shadow={1}
+    _pressed={{ opacity: 0.8 }}
+  >
+    <VStack space={2}>
+      <HStack justifyContent="space-between" alignItems="center">
+        <Text fontSize="lg" fontWeight="bold" color={textColor} flexShrink={1}>
+          {todo.title}
         </Text>
-
-
-        {/* Progress Bar */}
-        {/* <ProgressBar progress={progress} color={isPomodoro ? '#e74c3c' : isShortRest ? '#f39c12' : '#2ecc71'} style={styles.progressBar} /> */}
-
-        {/* Cycle Info */}
-        <Text style={styles.cyclesText}>Cycle: #{cycles}</Text>
-
-        {/* Controls */}
-        <View style={styles.controls}>
-          {!isActive ? (
-            <Button title="Start" onPress={startTimer} />
-          ) : (
-            <Button title="Stop" onPress={stopTimer} />
-          )}
-          <Button title="Reset" onPress={resetTimer} />
-          <Button title="Skip" onPress={skipTimer} />
-        </View>
-        <TouchableOpacity
-          onPress={openSettingsSheet}
+        <Pressable
+          onPress={(e) => {
+            e.stopPropagation();
+            Alert.alert(
+              "Complete Task",
+              "Mark this as completed and reset timer?",
+              [
+                { text: "Cancel", style: "cancel" },
+                { 
+                  text: "Complete", 
+                  onPress: completeCurrentTodo,
+                  style: "default" 
+                }
+              ]
+            );
+          }}
+          p={2}
+          px={3}
+          rounded="md"
+          bg="emerald.500"
+          _pressed={{ bg: "emerald.600", opacity: 0.9 }}
+          flexDirection="row"
+          alignItems="center"
         >
-          <Text>Open Settings</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+          <Icon 
+            as={Feather} 
+            name="check" 
+            color="white" 
+            size={4} 
+            mr={1}
+          />
+          <Text color="white" fontSize="xs" fontWeight="medium">
+            Done
+          </Text>
+        </Pressable>
+      </HStack>
+      
+      {todo.description && (
+        <Text fontSize="sm" color={secondaryText} numberOfLines={1}>
+          {todo.description}
+        </Text>
+      )}
+      
+      <HStack alignItems="center" space={2} mt={1}>
+        <Icon as={Feather} name="check-circle" color="primary.500" size={4} />
+        <Text fontSize="xs" color="primary.500">
+          {state.cycles - 1} pomodoros completed
+        </Text>
+      </HStack>
+    </VStack>
+  </Pressable>
+)}
 
+        </VStack>
+
+        <VStack space={4} width="100%" pb={8} px={6} mt={8}>
+          {!selectedTodoId && (
+            <Button
+              leftIcon={<Icon as={Feather} name="plus" size="md" />}
+              onPress={openTodosSelectionSheet}
+              variant="outline"
+              borderColor="primary.600"
+              borderWidth={2}
+              _text={{ color: textColor, fontWeight: 'medium' }}
+              _pressed={{ bg: 'primary.100' }}
+              py={3}
+              rounded="xl"
+            >
+              Select a Todo
+            </Button>
+          )}
+
+          <Button
+            leftIcon={<Icon as={MaterialIcons} name={state.isActive ? "pause" : "play-arrow"} size="md" />}
+            onPress={state.isActive ? stopTimer : startTimer}
+            bg={state.isActive ? 'primary.300' : 'primary.600'}
+            _pressed={{ opacity: 0.8, bg: state.isActive ? 'primary.600' : 'primary.550' }}
+            _text={{ fontWeight: 'bold' }}
+            py={4}
+            rounded="xl"
+            shadow={3}
+          >
+            {state.isActive ? "Pause" : "Start Focus"}
+          </Button>
+
+          <HStack space={3}>
+            <Button
+              flex={1}
+              leftIcon={<Icon as={Feather} name="skip-forward" size="md" />}
+              onPress={skipTimer}
+              bg="primary.600"
+              _pressed={{ opacity: 0.8 }}
+              _text={{ fontWeight: 'medium' }}
+              py={3}
+              rounded="xl"
+            >
+              Skip
+            </Button>
+            <Button
+              flex={1}
+              leftIcon={<Icon as={Feather} name="refresh-ccw" size="md" />}
+              onPress={resetTimer}
+              variant="outline"
+              borderColor="primary.600"
+              borderWidth={2}
+              _text={{ color: textColor, fontWeight: 'medium' }}
+              _pressed={{ bg: 'primary.100' }}
+              py={3}
+              rounded="xl"
+            >
+              Reset
+            </Button>
+          </HStack>
+
+          <Button
+            leftIcon={<Icon as={Feather} name="settings" size="md" />}
+            onPress={openSettingsSheet}
+            variant="ghost"
+            _text={{ color: secondaryText }}
+            _pressed={{ opacity: 0.6 }}
+          >
+            Timer Settings
+          </Button>
+        </VStack>
+      </ScrollView>
+    </Box>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: '#f7f7f7',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  tab: {
-    padding: 15,
-    backgroundColor: '#ddd',
-    margin: 5,
-    borderRadius: 10,
-  },
-  activeTab: {
-    padding: 15,
-    backgroundColor: '#4caf50',
-    margin: 5,
-    borderRadius: 10,
-  },
-  tabText: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  timerText: {
-    fontSize: 48,
-    marginVertical: 20,
-  },
-  pomodoroColor: {
-    color: '#e74c3c',
-  },
-  shortRestColor: {
-    color: '#f39c12',
-  },
-  restColor: {
-    color: '#2ecc71',
-  },
-  progressBar: {
-    width: '80%',
-    height: 10,
-    marginVertical: 10,
-  },
-  cyclesText: {
-    fontSize: 20,
-    marginVertical: 10,
-  },
-  controls: {
-    marginTop: 20,
-  },
-
-});
 
 export default PomodoroTimer;

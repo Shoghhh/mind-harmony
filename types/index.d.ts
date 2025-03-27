@@ -6,10 +6,11 @@ export interface TodoState {
 export type Todo = {
   id: number;
   title: string;
-  createdDate: string;
+  createdAt: string;
   completed: boolean;
   completedDate?: string;
   priority: number;
   description: string;
   assignedDate: string;
+  timeSpent: number;
 };

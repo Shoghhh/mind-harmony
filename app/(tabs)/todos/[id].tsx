@@ -91,7 +91,7 @@ export default function TodoDetail() {
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
-                            {moment(todo.createdDate).format('MMMM Do YYYY, h:mm a')}
+                            {moment(todo.createdAt).format('MMMM Do YYYY, h:mm a')}
                         </Text>
                     </Box>
 

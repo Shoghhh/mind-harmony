@@ -21,7 +21,7 @@ interface TodoItemProps {
 const TodoItem = gestureHandlerRootHOC(({ item, viewMode, onDelete, onToggleComplete }: TodoItemProps) => {
     const router = useRouter();
     const theme = useTheme();
-    const { title, createdDate, completed, completedDate, priority, description } = item;
+    const { title, createdAt, completed, completedDate, priority, description } = item;
 
     const priorityColors = ["green.400", "yellow.400", "red.400"];
     const priorityText = ["Low", "Medium", "High"];
@@ -116,7 +116,7 @@ const TodoItem = gestureHandlerRootHOC(({ item, viewMode, onDelete, onToggleComp
                             {/* <Badge colorScheme={priorityColors[priority]}>{priorityText[priority]}</Badge> */}
                         </HStack>
                         <HStack justifyContent="space-between" alignItems="center" mt={1}>
-                            <Text fontSize="xs" color="gray.500">{completed ? `Completed: ${formatDate(completedDate)}` : `Added: ${formatDate(createdDate)}`}</Text>
+                            <Text fontSize="xs" color="gray.500">{completed ? `Completed: ${formatDate(completedDate)}` : `Added: ${formatDate(createdAt)}`}</Text>
                             <IconButton
                                 icon={<MaterialIcons name={completed ? "check-circle" : "radio-button-unchecked"} size={24} color={theme.colors.purple[500]} />}
                                 onPress={onToggleComplete}

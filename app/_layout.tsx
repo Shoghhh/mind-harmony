@@ -49,11 +49,11 @@ export default function RootLayout() {
     }
 
     return (
-        <NativeBaseProvider theme={customTheme}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-                <PomodoroProvider>
-                    <BottomSheetProvider>
-                        <Provider store={store}>
+        <Provider store={store}>
+            <NativeBaseProvider theme={customTheme}>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                    <PomodoroProvider>
+                        <BottomSheetProvider>
                             <Background>
                                 <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}>
                                     <Stack.Screen name="auth" />
@@ -62,10 +62,10 @@ export default function RootLayout() {
                                 </Stack>
                                 <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
                             </Background>
-                        </Provider>
-                    </BottomSheetProvider>
-                </PomodoroProvider>
-            </GestureHandlerRootView>
-        </NativeBaseProvider>
+                        </BottomSheetProvider>
+                    </PomodoroProvider>
+                </GestureHandlerRootView>
+            </NativeBaseProvider>
+        </Provider>
     );
 }

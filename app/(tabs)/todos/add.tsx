@@ -53,10 +53,11 @@ export default function AddTodo() {
       title,
       description,
       priority,
-      createdDate: existingTodo?.createdDate || new Date().toISOString(),
+      createdAt: existingTodo?.createdAt || new Date().toISOString(),
       assignedDate: formattedAssignedDate,
       completed: existingTodo?.completed || false,
       completedDate: existingTodo?.completedDate,
+      timeSpent: existingTodo?.timeSpent || 0,
     };
 
     const navigate = () => router.push({

@@ -1,7 +1,7 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { StyleSheet, Keyboard, Platform, TouchableWithoutFeedback } from "react-native";
 import BottomSheet, { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import { KeyboardAvoidingView, TextInput } from "react-native";
+import { KeyboardAvoidingView } from "react-native";
 
 const MyBottomSheet = ({
   bottomSheetRef,
@@ -15,20 +15,24 @@ const MyBottomSheet = ({
   const handleSheetChanges = useCallback((index: number) => {
     console.log("Bottom Sheet State:", index);
     if (index === -1) {
-      Keyboard.dismiss(); // Close the keyboard when the bottom sheet is dismissed
+      Keyboard.dismiss();
     }
   }, []);
+
+  const snapPoints = useMemo(() => ['90%'], []);
 
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
+      index={0}
+      snapPoints={snapPoints}
       enablePanDownToClose
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       onChange={handleSheetChanges}
-      index={0}
+      handleIndicatorStyle={styles.handleIndicator}
+      backgroundStyle={styles.background}
       enableHandlePanningGesture
-      snapPoints={['50%']}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
           {...props}
@@ -36,31 +40,39 @@ const MyBottomSheet = ({
           appearsOnIndex={0}
           disappearsOnIndex={-1}
           opacity={0.4}
-          onPress={() => Keyboard.dismiss()} // Close the keyboard when backdrop is pressed
         />
       )}
     >
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <BottomSheetView style={styles.contentContainer}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-          >
+      <BottomSheetView style={styles.contentContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             {Component ? <Component {...componentProps} /> : null}
-          </KeyboardAvoidingView>
-        </BottomSheetView>
-      </TouchableWithoutFeedback>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </BottomSheetView>
     </BottomSheetModal>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'grey',
-  },
   contentContainer: {
     flex: 1,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  handleIndicator: {
+    backgroundColor: '#ccc',
+    width: 40,
+    height: 4,
+  },
+  background: {
+    backgroundColor: 'white',
+    borderRadius: 20,
   },
 });
 

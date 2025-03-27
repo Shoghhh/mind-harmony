@@ -1,3 +1,4 @@
+import { Todo } from "@/types";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface PomodoroContextType {
@@ -9,6 +10,8 @@ interface PomodoroContextType {
   setLongRestTime: (time: number) => void;
   cyclesBeforeLongRest: number;
   setCyclesBeforeLongRest: (cycles: number) => void;
+  selectedTodoId: number | null;
+  setSelectedTodoId: (id: number | null) => void;
 }
 
 const PomodoroContext = createContext<PomodoroContextType | undefined>(undefined);
@@ -26,6 +29,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [shortRestTime, setShortRestTime] = useState(5);
   const [longRestTime, setLongRestTime] = useState(15);
   const [cyclesBeforeLongRest, setCyclesBeforeLongRest] = useState(4);
+  const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null)
 
   return (
     <PomodoroContext.Provider
@@ -38,6 +42,8 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
         setLongRestTime,
         cyclesBeforeLongRest,
         setCyclesBeforeLongRest,
+        selectedTodoId,
+        setSelectedTodoId
       }}
     >
       {children}
