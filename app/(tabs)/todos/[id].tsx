@@ -186,20 +186,6 @@ export default function TodoDetail() {
                     )}
                 </Box>
 
-                {todo.timeSpent > 0 && (
-                    <Box p={4} bg={colors.neutral.white + "7A"} borderRadius="lg">
-                        <HStack alignItems="center" space={2}>
-                            <Icon as={MaterialIcons} name="timer" size="sm" color="primary.600" />
-                            <Text fontSize="md" color="primary.600" fontWeight="medium">
-                                Time Spent:
-                            </Text>
-                        </HStack>
-                        <Text fontSize="lg" color="primary.525" mt={2} ml={6}>
-                            {formatTimeSpent(todo.timeSpent)}
-                        </Text>
-                    </Box>
-                )}
-
                 <VStack space={4} mt={6}>
                     <Button
                         size="lg"
