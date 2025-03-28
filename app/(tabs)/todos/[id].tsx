@@ -62,6 +62,20 @@ export default function TodoDetail() {
         }
     };
 
+    const formatTimeSpent = (seconds: number) => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+
+        let formatted = '';
+        if (hours > 0) formatted += `${hours}h `;
+        if (minutes > 0) formatted += `${minutes}m `;
+        if (remainingSeconds > 0 || formatted === '') {
+            formatted += `${remainingSeconds}s`;
+        }
+        return formatted.trim();
+    };
+
     return (
         <ScrollView flex={1} p={6} marginBottom={3}>
             <VStack space={4} marginBottom={16}>
@@ -85,9 +99,9 @@ export default function TodoDetail() {
                 <VStack space={4} p={4} bg={colors.neutral.white + "7A"} borderRadius="lg">
                     <Box>
                         <HStack alignItems="center" space={2}>
-                            <Icon as={MaterialIcons} name="add-alarm" size="sm" color="primary.600" />
+                            <Icon as={MaterialIcons} name="add" size="sm" color="primary.600" />
                             <Text fontSize="md" color="primary.600" fontWeight="medium">
-                                Created:
+                                Added to app:
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
@@ -97,9 +111,9 @@ export default function TodoDetail() {
 
                     <Box>
                         <HStack alignItems="center" space={2}>
-                            <Icon as={MaterialIcons} name="event" size="sm" color="primary.600" />
+                            <Icon as={MaterialIcons} name="event-available" size="sm" color="primary.600" />
                             <Text fontSize="md" color="primary.600" fontWeight="medium">
-                                Assigned:
+                                Target completion date:
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
@@ -110,18 +124,25 @@ export default function TodoDetail() {
                     {todo.completedDate && (
                         <Box>
                             <HStack alignItems="center" space={2}>
-                                <Icon as={MaterialIcons} name="check-circle" size="sm" color="primary.600" />
+                                <Icon as={MaterialIcons} name="done-all" size="sm" color="primary.600" />
                                 <Text fontSize="md" color="primary.600" fontWeight="medium">
-                                    Completed:
+                                    Actually completed:
                                 </Text>
                             </HStack>
                             <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
                                 {moment(todo.completedDate).format('MMMM Do YYYY, h:mm a')}
                             </Text>
+                            {todo.timeSpent > 0 && (
+                                <HStack alignItems="center" space={2} ml={6} mt={1}>
+                                    <Icon as={MaterialIcons} name="timer" size="sm" color="primary.600" />
+                                    <Text fontSize="md" color="primary.600">
+                                        Time spent: {formatTimeSpent(todo.timeSpent)}
+                                    </Text>
+                                </HStack>
+                            )}
                         </Box>
                     )}
                 </VStack>
-
                 <Box p={4} bg={colors.neutral.white + "7A"} borderRadius="lg">
                     <HStack alignItems="center" space={2}>
                         <Icon as={MaterialIcons} name="priority-high" size="sm" color="primary.600" />
@@ -164,6 +185,20 @@ export default function TodoDetail() {
                         </Text>
                     )}
                 </Box>
+
+                {todo.timeSpent > 0 && (
+                    <Box p={4} bg={colors.neutral.white + "7A"} borderRadius="lg">
+                        <HStack alignItems="center" space={2}>
+                            <Icon as={MaterialIcons} name="timer" size="sm" color="primary.600" />
+                            <Text fontSize="md" color="primary.600" fontWeight="medium">
+                                Time Spent:
+                            </Text>
+                        </HStack>
+                        <Text fontSize="lg" color="primary.525" mt={2} ml={6}>
+                            {formatTimeSpent(todo.timeSpent)}
+                        </Text>
+                    </Box>
+                )}
 
                 <VStack space={4} mt={6}>
                     <Button

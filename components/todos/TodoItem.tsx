@@ -24,7 +24,6 @@ const TodoItem = gestureHandlerRootHOC(({ item, viewMode, onDelete, onToggleComp
     const { title, createdAt, completed, completedDate, priority, description } = item;
 
     const priorityColors = ["green.400", "yellow.400", "red.400"];
-    const priorityText = ["Low", "Medium", "High"];
 
     const formatDate = (dateStr: string) => {
         const date = moment(dateStr);
@@ -41,7 +40,7 @@ const TodoItem = gestureHandlerRootHOC(({ item, viewMode, onDelete, onToggleComp
 
 
     const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
-    const height = useSharedValue(measuredHeight || 100);
+    const height = useSharedValue(measuredHeight || 153);
     const opacity = useSharedValue(1);
     const translateX = useSharedValue(0);
 

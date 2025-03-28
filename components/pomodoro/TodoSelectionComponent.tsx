@@ -14,10 +14,12 @@ const TodoSelectionComponent = ({ onSelect }: { onSelect: (todo: Todo) => void }
     const { closeSheet } = useBottomSheet();
 
     const groupedTodos = useMemo(() => {
+        const currentYear = new Date().getFullYear();
         const incompleteTodos = todos.filter(todo => !todo.completed);
-        
-        return incompleteTodos.reduce((acc, todo) => {
-            const date = todo.createdAt ? parseISO(todo.createdAt) : new Date();
+
+        const grouped = incompleteTodos.reduce((acc, todo) => {
+            const date = todo.assignedDate ? parseISO(todo.assignedDate) : new Date();
+            const dateYear = date.getFullYear();
             let dateKey;
 
             if (isToday(date)) {
@@ -25,15 +27,30 @@ const TodoSelectionComponent = ({ onSelect }: { onSelect: (todo: Todo) => void }
             } else if (isYesterday(date)) {
                 dateKey = "Yesterday";
             } else {
-                dateKey = format(date, "EEEE, MMMM d");
+                dateKey = format(
+                    date,
+                    dateYear === currentYear
+                        ? "EEEE, MMMM d"
+                        : "EEEE, MMMM d, yyyy"
+                );
             }
 
             if (!acc[dateKey]) {
-                acc[dateKey] = [];
+                acc[dateKey] = {
+                    todos: [],
+                    date: date
+                };
             }
-            acc[dateKey].push(todo);
+            acc[dateKey].todos.push(todo);
             return acc;
-        }, {} as Record<string, Todo[]>);
+        }, {} as Record<string, { todos: Todo[]; date: Date }>);
+
+        return Object.entries(grouped)
+            .sort(([_, a], [__, b]) => b.date.getTime() - a.date.getTime())
+            .reduce((acc, [dateKey, group]) => {
+                acc[dateKey] = group.todos;
+                return acc;
+            }, {} as Record<string, Todo[]>);
     }, [todos]);
 
     const onSelectItem = (item: Todo) => {
