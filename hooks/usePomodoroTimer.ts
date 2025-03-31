@@ -19,6 +19,8 @@ interface UsePomodoroTimerParams {
     shortRestTime: number;
     longRestTime: number;
     cyclesBeforeLongRest: number;
+    autoStart: boolean;
+    autoSwitch: boolean;
     onModeTransition: () => void;
 }
 
@@ -27,6 +29,8 @@ export function usePomodoroTimer({
     shortRestTime,
     longRestTime,
     cyclesBeforeLongRest,
+    autoStart,
+    autoSwitch,
     onModeTransition,
     selectedTodoId,
     setSelectedTodoId,
@@ -43,30 +47,90 @@ export function usePomodoroTimer({
         mode: "pomodoro",
         lastUpdate: Date.now(),
     });
-    const accumulatedTimeRef = useRef(0);
-    const handleModeTransition = useCallback((prev: TimerState): TimerState => {
-        onModeTransition();
 
-        if (prev.mode === "pomodoro") {
-            const isLongRest = prev.cycles % cyclesBeforeLongRest === 0;
+    const accumulatedTimeRef = useRef(0);
+    const autoStartTimeoutRef = useRef<NodeJS.Timeout>();
+
+    useEffect(() => {
+        return () => {
+            if (autoStartTimeoutRef.current) {
+                clearTimeout(autoStartTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        setState(prev => {
+            if (!prev.isActive) {
+                return {
+                    ...prev,
+                    time: getTimeForMode(prev.mode)
+                };
+            }
+            return prev;
+        });
+    }, [pomodoroTime, shortRestTime, longRestTime]);
+
+    const getTimeForMode = useCallback((mode: TimerMode) => {
+        return mode === "pomodoro" ? pomodoroTime :
+            mode === "shortRest" ? shortRestTime :
+                longRestTime;
+    }, [pomodoroTime, shortRestTime, longRestTime]);
+
+    const handleModeTransition = useCallback((prev: TimerState, isManualAction = false): TimerState => {
+        onModeTransition();
+        
+        if (autoStartTimeoutRef.current) {
+            clearTimeout(autoStartTimeoutRef.current);
+        }
+    
+        if (!autoSwitch && !isManualAction) {
             return {
                 ...prev,
-                mode: isLongRest ? "longRest" : "shortRest",
-                time: isLongRest ? longRestTime : shortRestTime,
+                time: getTimeForMode(prev.mode),
+                isActive: false,
                 lastUpdate: Date.now()
             };
         }
+    
+        let nextState: TimerState;
+        
+        if (prev.mode === "pomodoro") {
+            const isLongRest = prev.cycles % cyclesBeforeLongRest === 0;
+            nextState = {
+                ...prev,
+                mode: isLongRest ? "longRest" : "shortRest",
+                time: isLongRest ? longRestTime : shortRestTime,
+                cycles: prev.cycles,
+                lastUpdate: Date.now(),
+                isActive: false
+            };
+        } else {
+            nextState = {
+                ...prev,
+                mode: "pomodoro",
+                time: pomodoroTime,
+                cycles: prev.cycles + 1,
+                lastUpdate: Date.now(),
+                isActive: false
+            };
+        }
+    
+        if (autoStart && (autoSwitch || isManualAction)) {
+            nextState.isActive = true;
+        }
+    
+        return nextState;
+    }, [
+        pomodoroTime,
+        shortRestTime,
+        longRestTime,
+        cyclesBeforeLongRest,
+        onModeTransition,
+        autoStart,
+        autoSwitch
+    ]);
 
-        return {
-            ...prev,
-            mode: "pomodoro",
-            time: pomodoroTime,
-            cycles: prev.cycles + 1,
-            lastUpdate: Date.now()
-        };
-    }, [pomodoroTime, shortRestTime, longRestTime, cyclesBeforeLongRest, onModeTransition]);
-
-    // Timer countdown logic
     useEffect(() => {
         if (!state.isActive) return;
 
@@ -87,11 +151,26 @@ export function usePomodoroTimer({
         return () => clearInterval(interval);
     }, [state.isActive, handleModeTransition]);
 
+    useEffect(() => {
+        if (state.isActive && state.mode === "pomodoro") {
+            const interval = setInterval(() => {
+                accumulatedTimeRef.current += 1;
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+    }, [state.isActive, state.mode]);
+
     const startTimer = useCallback(() => {
+        if (autoStartTimeoutRef.current) {
+            clearTimeout(autoStartTimeoutRef.current);
+        }
         setState(prev => ({ ...prev, isActive: true, lastUpdate: Date.now() }));
     }, []);
 
     const stopTimer = useCallback(() => {
+        if (autoStartTimeoutRef.current) {
+            clearTimeout(autoStartTimeoutRef.current);
+        }
         setState(prev => ({ ...prev, isActive: false }));
     }, []);
 
@@ -104,20 +183,12 @@ export function usePomodoroTimer({
             mode: "pomodoro",
             lastUpdate: Date.now(),
         });
+        accumulatedTimeRef.current = 0;
     }, [stopTimer, pomodoroTime]);
 
     const skipTimer = useCallback(() => {
-        setState(prev => handleModeTransition(prev));
+        setState(prev => handleModeTransition(prev, true));
     }, [handleModeTransition]);
-
-    useEffect(() => {
-        if (state.isActive && state.mode === "pomodoro") {
-            const interval = setInterval(() => {
-                accumulatedTimeRef.current += 1;
-            }, 1000);
-            return () => clearInterval(interval);
-        }
-    }, [state.isActive, state.mode]);
 
     const getAccumulatedTime = () => accumulatedTimeRef.current;
 
@@ -130,7 +201,9 @@ export function usePomodoroTimer({
         }
 
         resetTimer();
-    }, [state.isActive, state.mode, selectedTodoId, stopTimer]);
+        accumulatedTimeRef.current = 0;
+        setSelectedTodoId(newTodo.id);
+    }, [state.isActive, state.mode, selectedTodoId, resetTimer, dispatch]);
 
     const changeMode = useCallback((mode: TimerMode) => {
         if (state.isActive) return;
@@ -138,11 +211,10 @@ export function usePomodoroTimer({
         setState(prev => ({
             ...prev,
             mode,
-            time: mode === "pomodoro" ? pomodoroTime :
-                mode === "shortRest" ? shortRestTime :
-                    longRestTime
+            time: getTimeForMode(mode),
+            isActive: autoStart 
         }));
-    }, [state.isActive, pomodoroTime, shortRestTime, longRestTime]);
+    }, [state.isActive, getTimeForMode, autoStart]);
 
     const completeCurrentTodo = useCallback(() => {
         if (!selectedTodoId) return;
@@ -157,6 +229,7 @@ export function usePomodoroTimer({
             mode: "pomodoro",
             lastUpdate: Date.now(),
         });
+        accumulatedTimeRef.current = 0;
 
         Toast.show({
             title: "Task Completed!",

@@ -36,7 +36,10 @@ const PomodoroTimer = () => {
     longRestTime,
     cyclesBeforeLongRest,
     selectedTodoId,
-    setSelectedTodoId
+    setSelectedTodoId,
+    progressStyle,
+    autoStart,
+    autoSwitch
   } = usePomodoro();
 
   const todo = useSelector((state: RootState) =>
@@ -66,7 +69,9 @@ const PomodoroTimer = () => {
     },
     selectedTodoId,
     setSelectedTodoId,
-    dispatch
+    autoStart,
+    autoSwitch,
+    dispatch,
   });
 
   useTimeTracking(state.isActive, state.mode, todo?.id);
@@ -107,13 +112,14 @@ const PomodoroTimer = () => {
             ))}
           </HStack>
 
-          <Box bg={cardBg} p={2} rounded="full" shadow={3}>
+          <Box bg={cardBg} p={2} rounded="full" shadow={3} width={'100%'}>
             <ProgressIndicator
               currentTime={state.time}
               totalTime={state.mode === 'pomodoro' ? pomodoroTime :
                 state.mode === 'shortRest' ? shortRestTime : longRestTime}
               mode={state.mode}
               cycles={state.cycles}
+              type={progressStyle}
             />
           </Box>
 
@@ -122,72 +128,72 @@ const PomodoroTimer = () => {
           </Text>
 
           {selectedTodoId && todo && (
-  <Pressable
-    onPress={openTodosSelectionSheet}
-    bg={cardBg}
-    p={3}
-    rounded="xl"
-    w="full"
-    shadow={1}
-    _pressed={{ opacity: 0.8 }}
-  >
-    <VStack space={2}>
-      <HStack justifyContent="space-between" alignItems="center">
-        <Text fontSize="lg" fontWeight="bold" color={textColor} flexShrink={1}>
-          {todo.title}
-        </Text>
-        <Pressable
-          onPress={(e) => {
-            e.stopPropagation();
-            Alert.alert(
-              "Complete Task",
-              "Mark this as completed and reset timer?",
-              [
-                { text: "Cancel", style: "cancel" },
-                { 
-                  text: "Complete", 
-                  onPress: completeCurrentTodo,
-                  style: "default" 
-                }
-              ]
-            );
-          }}
-          p={2}
-          px={3}
-          rounded="md"
-          bg="emerald.500"
-          _pressed={{ bg: "emerald.600", opacity: 0.9 }}
-          flexDirection="row"
-          alignItems="center"
-        >
-          <Icon 
-            as={Feather} 
-            name="check" 
-            color="white" 
-            size={4} 
-            mr={1}
-          />
-          <Text color="white" fontSize="xs" fontWeight="medium">
-            Done
-          </Text>
-        </Pressable>
-      </HStack>
-      
-      {todo.description && (
-        <Text fontSize="sm" color={secondaryText} numberOfLines={1}>
-          {todo.description}
-        </Text>
-      )}
-      
-      <HStack alignItems="center" space={2} mt={1}>
-        <Icon as={Feather} name="check-circle" color="primary.500" size={4} />
-        <Text fontSize="xs" color="primary.500">
-          {state.cycles - 1} pomodoros completed
-        </Text>
-      </HStack>
-    </VStack>
-  </Pressable>
-)}
+            <Pressable
+              onPress={openTodosSelectionSheet}
+              bg={cardBg}
+              p={3}
+              rounded="xl"
+              w="full"
+              shadow={1}
+              _pressed={{ opacity: 0.8 }}
+            >
+              <VStack space={2}>
+                <HStack justifyContent="space-between" alignItems="center">
+                  <Text fontSize="lg" fontWeight="bold" color={textColor} flexShrink={1}>
+                    {todo.title}
+                  </Text>
+                  <Pressable
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      Alert.alert(
+                        "Complete Task",
+                        "Mark this as completed and reset timer?",
+                        [
+                          { text: "Cancel", style: "cancel" },
+                          {
+                            text: "Complete",
+                            onPress: completeCurrentTodo,
+                            style: "default"
+                          }
+                        ]
+                      );
+                    }}
+                    p={2}
+                    px={3}
+                    rounded="md"
+                    bg="emerald.500"
+                    _pressed={{ bg: "emerald.600", opacity: 0.9 }}
+                    flexDirection="row"
+                    alignItems="center"
+                  >
+                    <Icon
+                      as={Feather}
+                      name="check"
+                      color="white"
+                      size={4}
+                      mr={1}
+                    />
+                    <Text color="white" fontSize="xs" fontWeight="medium">
+                      Done
+                    </Text>
+                  </Pressable>
+                </HStack>
+
+                {todo.description && (
+                  <Text fontSize="sm" color={secondaryText} numberOfLines={1}>
+                    {todo.description}
+                  </Text>
+                )}
+
+                <HStack alignItems="center" space={2} mt={1}>
+                  <Icon as={Feather} name="check-circle" color="primary.500" size={4} />
+                  <Text fontSize="xs" color="primary.500">
+                    {state.cycles - 1} pomodoros completed
+                  </Text>
+                </HStack>
+              </VStack>
+            </Pressable>
+          )}
 
         </VStack>
 

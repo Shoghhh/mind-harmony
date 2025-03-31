@@ -25,12 +25,11 @@ export const BottomSheetProvider: React.FC<{ children: ReactNode }> = ({ childre
     const [componentProps, setComponentProps] = useState<any>({});
 
     const present = useCallback(<T,>(component: React.FC<T>, props?: T) => {
-        bottomSheetRef.current?.dismiss();
+        setComponent(() => component);
+        setComponentProps(props);
         setTimeout(() => {
-            setComponent(() => component);
-            setComponentProps(props);
             bottomSheetRef.current?.present();
-        }, 300);
+        }, 100);
     }, []);
 
     const closeSheet = useCallback(() => {
