@@ -1,10 +1,9 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import auth from '@react-native-firebase/auth'
+import { Redirect, useRouter } from "expo-router";
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { Box, Button, Image, VStack } from "native-base";
+import { Box, Button, Image } from "native-base";
 import { useFonts, Borel_400Regular } from '@expo-google-fonts/borel';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from "@/providers/AuthContext";
 
 GoogleSignin.configure({
   webClientId: '602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com',
@@ -12,31 +11,14 @@ GoogleSignin.configure({
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [fontsLoaded] = useFonts({
-    Borel_400Regular
-  });
-
-  function onAuthStateChanged(user: any) {
-    setUser(user);
-    if (initializing) setInitializing(false);
+  const [fontsLoaded] = useFonts({ Borel_400Regular });
+  const { user } = useAuth();
+    
+  if (!fontsLoaded) return null;
+  
+  if (user) {
+    return <Redirect href="/(tabs)/dashboard" />;
   }
-
-  useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber;
-  }, []);
-
-  useEffect(() => {
-    if (initializing) return;
-    if (user) {
-      router.replace("/(tabs)/dashboard");
-    }
-  }, [initializing, user, router]);
-
-  if (initializing || !fontsLoaded) return null;
-
   return (
     <Box flex={1} justifyContent={'space-between'}>
       <LinearGradient
@@ -45,7 +27,6 @@ export default function HomeScreen() {
         end={{ x: 0.5, y: 1 }}
         style={{ flex: 1 }}
       />
-
       <Image
         source={require('../assets/images/welcome.png')}
         alt="Alternate Text"
@@ -57,7 +38,7 @@ export default function HomeScreen() {
         colors={['#e3e9ff', 'white']}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
-      style={{ flex: 1 }}
+        style={{ flex: 1 }}
       >
         <Button
           bg={'primary.600'}

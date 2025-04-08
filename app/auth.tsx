@@ -17,6 +17,7 @@ import {
 } from "native-base";
 import { Ionicons } from "@expo/vector-icons";
 import { MyToast } from "@/components/MyToast";
+import { useAuth } from "@/providers/AuthContext";
 
 GoogleSignin.configure({
     webClientId: '602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com',
@@ -26,28 +27,18 @@ export default function AuthScreen() {
     const router = useRouter();
     const { colors } = useTheme();
     const toast = useToast();
-    const [initializing, setInitializing] = useState(true);
-    const [user, setUser] = useState<any>(null);
+    const { user } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
-
     const [authAction, setAuthAction] = useState<'login' | 'signup' | 'resetpass'>('signup');
 
     useEffect(() => {
-        const subscriber = auth().onAuthStateChanged((user) => {
-            setUser(user);
-            if (initializing) setInitializing(false);
-        });
-        return subscriber;
-    }, []);
-
-    useEffect(() => {
-        if (!initializing && user) {
+        if (user) {
             router.replace("/(tabs)/dashboard");
         }
-    }, [initializing, user, router]);
+    }, [user]);
 
     useEffect(() => {
         setEmail('')
@@ -80,7 +71,6 @@ export default function AuthScreen() {
 
             const credential = auth.GoogleAuthProvider.credential(idToken);
             await auth().signInWithCredential(credential);
-            showToast('Success', 'success', 'Signed in with Google successfully');
         } catch (error) {
             console.error(error);
             showToast('Error', 'error', 'Google sign-in failed. Please try again.');
@@ -105,7 +95,6 @@ export default function AuthScreen() {
 
             if (authAction === 'login') {
                 await auth().signInWithEmailAndPassword(email, password);
-                showToast('Success', 'success', 'Signed in successfully');
             } else {
                 const userCredential = await auth().createUserWithEmailAndPassword(email, password);
                 await userCredential.user.sendEmailVerification();
@@ -157,7 +146,7 @@ export default function AuthScreen() {
         }
         setLoading(true)
         try {
-            // await auth().sendPasswordResetEmail(email);
+            await auth().sendPasswordResetEmail(email);
             showToast('Success', 'success', 'Password reset email sent. Check your inbox.');
             setEmail('')
             setAuthAction('login')
@@ -168,13 +157,6 @@ export default function AuthScreen() {
         }
     };
 
-    if (initializing) {
-        return (
-            <Center flex={1}>
-                <ActivityIndicator size="large" />
-            </Center>
-        );
-    }
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
