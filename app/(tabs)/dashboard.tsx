@@ -1,22 +1,16 @@
-import { auth } from "@/firebase";
-import { useBottomSheet } from "@/providers/BottomSheetProvider";
-import { signOut } from "firebase/auth";
-import { View, StyleSheet, Button, TouchableOpacity, Text, KeyboardAvoidingView, Platform } from "react-native";
-import { TextInput } from "react-native-gesture-handler";
-// import auth from '@react-native-firebase/auth'
+import auth from '@react-native-firebase/auth';
+import { useRouter } from 'expo-router';
+import { View, StyleSheet, Button } from "react-native";
 
 export default function Dashboard() {
-  // const user = auth().currentUser
-  // const { openSheet } = useBottomSheet();
+  const router = useRouter()
 
+  const handleSignOut = () => {
+    auth()
+      .signOut()
+      .then(() => console.log('User signed out!'));
 
-  const handleSignOut = async () => {
-    try {
-      // await signOut(auth);
-      console.log('User signed out');
-    } catch (error) {
-      console.error('Sign out error:');
-    }
+      router.replace("/auth");
   }
 
   return (

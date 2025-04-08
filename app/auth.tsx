@@ -1,101 +1,302 @@
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Button, KeyboardAvoidingView, Linking, StyleSheet, Text, TextInput, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink } from 'firebase/auth';
-import { auth } from "@/firebase";
+import { ActivityIndicator, Keyboard, TouchableWithoutFeedback } from "react-native";
+import auth from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import {
+    Box,
+    Button,
+    Center,
+    FormControl,
+    Input,
+    Link,
+    Text,
+    VStack,
+    useTheme,
+    useToast
+} from "native-base";
+import { Ionicons } from "@expo/vector-icons";
+import { MyToast } from "@/components/MyToast";
+
+GoogleSignin.configure({
+    webClientId: '602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com',
+});
 
 export default function AuthScreen() {
-    const [email, setEmail] = useState('')
-    const [loading, setLoading] = useState(false)
-    const [message, setMessage] = useState('')
+    const router = useRouter();
+    const { colors } = useTheme();
+    const toast = useToast();
+    const [initializing, setInitializing] = useState(true);
+    const [user, setUser] = useState<any>(null);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
 
-    const sendSignInLink = async () => {
-        const actionCodeSettings = {
-            url: 'https://mind--harmony.web.app/auth',
-            handleCodeInApp: true,
-        };
+    const [authAction, setAuthAction] = useState<'login' | 'signup' | 'resetpass'>('signup');
 
+    useEffect(() => {
+        const subscriber = auth().onAuthStateChanged((user) => {
+            setUser(user);
+            if (initializing) setInitializing(false);
+        });
+        return subscriber;
+    }, []);
+
+    useEffect(() => {
+        if (!initializing && user) {
+            router.replace("/(tabs)/dashboard");
+        }
+    }, [initializing, user, router]);
+
+    useEffect(() => {
+        setEmail('')
+        setPassword('')
+    }, [authAction])
+
+    const showToast = (title: string, status: 'success' | 'error' | 'warning' | 'info', description?: string) => {
+        toast.show({
+            render: () => (
+                <MyToast
+                    title={title}
+                    description={description}
+                    status={status}
+                />
+            ),
+            placement: 'top',
+            duration: 2000,
+        });
+    };
+
+    const handleGoogleSignIn = async () => {
         try {
-            setLoading(true);
-            await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-            console.log('Email link sent to:', email);
-            setMessage('Sign-in link sent! Check your email to complete sign-in.');
+            setGoogleLoading(true);
+            await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+            const signInResult = await GoogleSignin.signIn();
+            const tokens = await GoogleSignin.getTokens();
+            const idToken = tokens.idToken;
 
-            await AsyncStorage.setItem('emailForSignIn', email);
+            if (!idToken) throw new Error('No ID token received');
+
+            const credential = auth.GoogleAuthProvider.credential(idToken);
+            await auth().signInWithCredential(credential);
+            showToast('Success', 'success', 'Signed in with Google successfully');
+        } catch (error) {
+            console.error(error);
+            showToast('Error', 'error', 'Google sign-in failed. Please try again.');
+        } finally {
+            setGoogleLoading(false);
+        }
+    };
+
+    const handleEmailAuth = async () => {
+        try {
+            if (!email || !password) {
+                showToast('Error', 'error', 'Please enter both email and password');
+                return;
+            }
+
+            if (authAction === 'signup' && password.length < 6) {
+                showToast('Error', 'error', 'Password should be at least 6 characters');
+                return;
+            }
+
+            setLoading(true);
+
+            if (authAction === 'login') {
+                await auth().signInWithEmailAndPassword(email, password);
+                showToast('Success', 'success', 'Signed in successfully');
+            } else {
+                const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+                await userCredential.user.sendEmailVerification();
+                showToast(
+                    'Success',
+                    'success',
+                    'Account created! Please verify your email.'
+                );
+            }
         } catch (error: any) {
-            console.error('Error signing up: ', error);
-            setMessage('Error sending sign-in link. Please try again.');
+            handleAuthError(error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSignInWithLink = async (url: string) => {
-        const emailForSignIn = await AsyncStorage.getItem('emailForSignIn');
-        if (emailForSignIn && isSignInWithEmailLink(auth, url)) {
-            try {
-                const res = await signInWithEmailLink(auth, emailForSignIn, url);
-                console.log(res)
-                setMessage('Sign-in successful!');
-                AsyncStorage.removeItem('emailForSignIn')
-            } catch (error) {
-                setMessage('Error completing sign-in. Please try again.');
-                console.error('Sign-in error:', error);
-            }
-        } else {
-            setMessage('Invalid sign-in link. Please check your email and try again.');
+    const handleAuthError = (error: any) => {
+        console.error(error);
+        let message = "Authentication failed. Please try again.";
+
+        switch (error.code) {
+            case 'auth/user-not-found':
+                message = "No account found with this email.";
+                break;
+            case 'auth/wrong-password':
+                message = "Incorrect password.";
+                break;
+            case 'auth/email-already-in-use':
+                message = "This email is already registered.";
+                break;
+            case 'auth/invalid-email':
+                message = "Please enter a valid email address.";
+                break;
+            case 'auth/weak-password':
+                message = "Password should be at least 6 characters.";
+                break;
+            case 'auth/operation-not-allowed':
+                message = "Email/password accounts are not enabled.";
+                break;
+        }
+
+        showToast('Error', 'error', message);
+    };
+
+    const handlePasswordReset = async () => {
+        if (!email) {
+            showToast('Error', 'error', 'Please enter your email first');
+            return;
+        }
+        setLoading(true)
+        try {
+            // await auth().sendPasswordResetEmail(email);
+            showToast('Success', 'success', 'Password reset email sent. Check your inbox.');
+            setEmail('')
+            setAuthAction('login')
+        } catch (error) {
+            showToast('Error', 'error', 'Failed to send reset email. Please try again.');
+        } finally {
+            setLoading(false)
         }
     };
 
-    useEffect(() => {
-        const handleDeepLink = async ({ url }: { url: string }) => {
-            if (url) {console.log(url)
-                if (url.startsWith("exp://10.27.64.61:8082/--/auth")) {
-                    await handleSignInWithLink(url);
-                }
-            }
-        };
-        const subscribe = Linking.addEventListener('url', handleDeepLink);
-        return () => {
-            subscribe.remove()
-        };
-    }, []);
+    if (initializing) {
+        return (
+            <Center flex={1}>
+                <ActivityIndicator size="large" />
+            </Center>
+        );
+    }
 
     return (
-        <View style={styles.container}>
-            <KeyboardAvoidingView behavior="padding">
-                <Text style={[ { textAlign: 'center' }]}>Sign in</Text>
-                <Text>Email</Text>
-                <TextInput
-                    value={email}
-                    style={styles.input}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    placeholder="Email"
-                />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <Center flex={1} p="6" justifyContent={'center'}>
+                <Box flex={2} justifyContent={'flex-end'} >
+                    {authAction === 'signup' && <Text
+                        fontSize="5xl"
+                        textAlign="center"
+                        lineHeight="2xl"
+                        style={{ fontFamily: "Borel_400Regular" }}
+                        color="primary.600"
 
-                {loading ?
-                    <ActivityIndicator size={'small'} style={{ margin: 25 }} />
-                    : <Button onPress={sendSignInLink} title="Sign in" />}
+                    >
+                        Welcome
+                    </Text>}
+                </Box>
+                <VStack space={4} w="100%" flex={6}>
+                    <Text
+                        fontSize="3xl"
+                        textAlign="center"
+                        lineHeight="2xl"
+                        style={{ fontFamily: "Borel_400Regular" }}
+                        color="primary.600"
+                    >
+                        {authAction === 'login' ? 'Sign in' : authAction === 'signup' ? 'Sign up' : 'Reset Password'}
+                    </Text>
+                    <Box w="100%" >
+                        <FormControl>
+                            <FormControl.Label>Email</FormControl.Label>
+                            <Input
+                                height={50}
+                                borderRadius={"lg"}
+                                backgroundColor={"neutral.white"}
+                                placeholder="Enter your email"
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                isDisabled={loading}
+                            />
+                        </FormControl>
 
-                <Text>{message}</Text>
-            </KeyboardAvoidingView>
-        </View>
+                        {authAction !== 'resetpass' && (
+                            <FormControl mt="4">
+                                <FormControl.Label>Password</FormControl.Label>
+                                <Input
+                                    height={50}
+                                    borderRadius={"lg"}
+                                    backgroundColor={"neutral.white"}
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    type="password"
+                                    isDisabled={loading}
+                                />
+                            </FormControl>
+                        )}
+
+                        {authAction === 'login' && (
+                            <Link
+                                color={'primary.200'}
+                                alignSelf="flex-end"
+                                mt="2"
+                                onPress={() => setAuthAction('resetpass')}
+                            >
+                                Forgot password?
+                            </Link>
+                        )}
+                    </Box>
+
+                    {authAction === 'resetpass' ?
+                        <Button
+                            onPress={handlePasswordReset}
+                            isLoading={loading}
+                            bg={'primary.600'}
+                            _pressed={{ opacity: 0.8, bg: 'primary.550' }}
+                            _text={{ fontWeight: 'bold' }}
+                            py={4}
+                            rounded="xl"
+                            shadow={3}
+                        >
+                            Reset Password
+                        </Button> : <>
+                            <Button
+                                onPress={handleEmailAuth}
+                                isLoading={loading}
+                                bg={'primary.600'}
+                                _pressed={{ opacity: 0.8, bg: 'primary.550' }}
+                                _text={{ fontWeight: 'bold' }}
+                                py={4}
+                                rounded="xl"
+                                shadow={3}
+                            >
+                                {authAction === 'login' ? 'Sign In' : 'Create Account'}
+                            </Button>
+
+                            <Button
+                                onPress={handleGoogleSignIn}
+                                isLoading={googleLoading}
+                                bg={'neutral.white'}
+                                leftIcon={<Ionicons name="logo-google" size={20} color={colors.primary[600]} />}
+                                _pressed={{ opacity: 0.8, bg: 'neutral.white' }}
+                                _text={{ fontWeight: 'bold', color: 'primary.600' }}
+                                py={4}
+                                rounded="xl"
+                                shadow={3}
+                            >
+                                Continue with Google
+                            </Button>
+                        </>}
+
+                    <Link
+                        onPress={() => setAuthAction(authAction === 'login' ? 'signup' : 'login')}
+                        alignSelf={'center'}
+                        mt="2"
+                    >
+                        {authAction === 'login'
+                            ? "Don't have an account? Sign up"
+                            : "Already have an account? Sign in"}
+                    </Link>
+                </VStack>
+            </Center>
+        </TouchableWithoutFeedback>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        marginHorizontal: 20,
-        justifyContent: 'center',
-    },
-    input: {
-        marginVertical: 4,
-        height: 50,
-        borderWidth: 1,
-        borderRadius: 4,
-        padding: 10,
-    }
-});
