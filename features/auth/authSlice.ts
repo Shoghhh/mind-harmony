@@ -13,6 +13,7 @@ interface AuthState {
     loading: boolean;
     googleLoading: boolean;
     toastMessage: ToastMessage | null;
+    authAction: 'login' | 'signup' | 'resetpass';
 }
 
 const initialState: AuthState = {
@@ -21,6 +22,7 @@ const initialState: AuthState = {
     loading: false,
     googleLoading: false,
     toastMessage: null,
+    authAction: 'signup'
 };
 
 export const authSlice = createSlice({
@@ -51,9 +53,12 @@ export const authSlice = createSlice({
         setAuthState: (state, action) => {
             state.user = action.payload.user
             state.initialized = action.payload.initialized
+        },
+        setAuthAction: (state, action) => {
+            state.authAction = action.payload
         }
     },
 });
 
-export const { setUser, setLoading, setGoogleLoading, setToastMessage, clearToastMessage, signOutUser, setAuthState } = authSlice.actions;
+export const { setUser, setLoading, setGoogleLoading, setToastMessage, clearToastMessage, signOutUser, setAuthState, setAuthAction } = authSlice.actions;
 export default authSlice.reducer;

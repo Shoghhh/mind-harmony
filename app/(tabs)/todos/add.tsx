@@ -8,6 +8,7 @@ import { Todo } from '@/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { addTodo, updateTodo } from '@/features/todos/todosThunks';
 import { AppDispatch, RootState } from '@/store/store';
+import { Timestamp } from 'firebase/firestore';
 
 export default function AddTodo() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function AddTodo() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState(Priority.Low);
   const { date, id } = useLocalSearchParams();
+  const todoId = Array.isArray(id) ? id[0] : id;
+
   const initialDate = Array.isArray(date) ? date[0] : date;
   const parsedDate = initialDate ? new Date(initialDate) : new Date();
   const [assignedDate, setAssignedDate] = useState(parsedDate);
@@ -27,8 +30,9 @@ export default function AddTodo() {
   }));
 
   const existingTodo = useSelector((state: RootState) =>
-    id ? state.todos.todos.find((todo) => todo.id === parseInt(id as string)) : null
+    todoId ? state.todos.todos.find((todo) => todo.id === todoId) : null
   );
+  const { loading } = useSelector((state: RootState) => state.todos);
 
   useEffect(() => {
     if (existingTodo) {
@@ -39,40 +43,49 @@ export default function AddTodo() {
     }
   }, [existingTodo]);
 
-  const handleSaveTodo = () => {
+  const handleSaveTodo = async () => {
     if (!title.trim()) {
       alert('Task name is required');
       return;
     }
 
-    const todoId = id ? parseInt(id.toString()) : Date.now();
+    if (!(assignedDate instanceof Date) || isNaN(assignedDate.getTime())) {
+      alert('Invalid assigned date');
+      return;
+    }
+
     const formattedAssignedDate = `${assignedDate.getFullYear()}-${(assignedDate.getMonth() + 1).toString().padStart(2, '0')}-${assignedDate.getDate().toString().padStart(2, '0')}`;
 
     const updatedTodo: Todo = {
-      id: todoId,
+      id: todoId || '',
       title,
       description,
       priority,
-      createdAt: existingTodo?.createdAt || new Date().toISOString(),
+      createdAt: existingTodo?.createdAt || Timestamp.now().toDate().toISOString(),
       assignedDate: formattedAssignedDate,
-      completed: existingTodo?.completed || false,
-      completedDate: existingTodo?.completedDate,
+      completed: existingTodo?.completed ?? false,
+      completedDate: existingTodo?.completedDate || null,
       timeSpent: existingTodo?.timeSpent || 0,
     };
-
     const navigate = () => router.push({
       pathname: '/(tabs)/todos',
       params: { date: updatedTodo.assignedDate }
     });
 
-    if (id) {
-      dispatch(updateTodo(updatedTodo.id, updatedTodo))
-        .then(navigate)
-        .catch((error: string) => console.error('Update failed:', error));
-    } else {
-      dispatch(addTodo(updatedTodo))
-        .then(navigate)
-        .catch((error: string) => console.error('Creation failed:', error));
+    try {
+      if (todoId) {
+        await dispatch(updateTodo(updatedTodo.id, updatedTodo));
+      } else {
+        await dispatch(addTodo(updatedTodo));
+      }
+      navigate();
+
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      } else {
+        console.error('An unknown error occurred during saving.');
+      }
     }
   };
 
@@ -162,8 +175,9 @@ export default function AddTodo() {
               bg: 'primary.500',
               opacity: 0.5
             }}
+            isLoading={loading}
           >
-            {id ? "Save" : 'Create Task'}
+            {todoId ? "Save" : 'Create Task'}
           </Button>
           <DateTimePickerModal
             isVisible={isDatePickerVisible}

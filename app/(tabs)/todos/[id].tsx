@@ -9,18 +9,20 @@ import { Priority, PriorityLabels } from '@/utils/constants';
 import { Box, Button, Text, VStack, HStack, Badge, ScrollView, Divider, Icon } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import colors from '@/styles/colors';
+import formatTodoDate from '@/utils/formatTodoDate';
 
 export default function TodoDetail() {
     const router = useRouter();
     const { id } = useLocalSearchParams();
     const dispatch = useDispatch<AppDispatch>();
-    const todoId = typeof id === 'string' ? parseInt(id, 10) : undefined;
+
+    const todoId = Array.isArray(id) ? id[0] : id;
 
     const todo = useSelector((state: RootState) =>
         state.todos.todos.find((item) => item.id === todoId)
     );
 
-    if (todoId === undefined || isNaN(todoId)) {
+    if (!todoId || typeof todoId !== 'string') {
         return (
             <Box flex={1} justifyContent="center" alignItems="center">
                 <Text fontSize="xl" color="neutral.grayDark" fontWeight="medium">
@@ -39,7 +41,6 @@ export default function TodoDetail() {
             </Box>
         );
     }
-
     const handleDelete = () => {
         dispatch(deleteTodo(todoId));
         router.push('/(tabs)/todos');
@@ -105,7 +106,7 @@ export default function TodoDetail() {
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
-                            {moment(todo.createdAt).format('MMMM Do YYYY, h:mm a')}
+                            {formatTodoDate(todo.createdAt)}
                         </Text>
                     </Box>
 
@@ -117,7 +118,7 @@ export default function TodoDetail() {
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
-                            {moment(todo.assignedDate).format('MMMM Do YYYY')}
+                            {formatTodoDate(todo.createdAt)}
                         </Text>
                     </Box>
 
@@ -130,7 +131,7 @@ export default function TodoDetail() {
                                 </Text>
                             </HStack>
                             <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
-                                {moment(todo.completedDate).format('MMMM Do YYYY, h:mm a')}
+                                {formatTodoDate(todo.createdAt)}
                             </Text>
                             {todo.timeSpent > 0 && (
                                 <HStack alignItems="center" space={2} ml={6} mt={1}>

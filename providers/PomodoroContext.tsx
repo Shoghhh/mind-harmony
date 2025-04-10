@@ -11,8 +11,8 @@ interface PomodoroContextType {
   setLongRestTime: (time: number) => void;
   cyclesBeforeLongRest: number;
   setCyclesBeforeLongRest: (cycles: number) => void;
-  selectedTodoId: number | null;
-  setSelectedTodoId: (id: number | null) => void;
+  selectedTodoId: string | null;
+  setSelectedTodoId: (id: string | null) => void;
   alarmVolume: number;
   setAlarmVolume: (volume: number) => void;
   alarmSound: SoundOption;
@@ -45,7 +45,7 @@ export const PomodoroProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [shortRestTime, setShortRestTime] = useState(5);
   const [longRestTime, setLongRestTime] = useState(15);
   const [cyclesBeforeLongRest, setCyclesBeforeLongRest] = useState(4);
-  const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null)
+  const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null)
   const [alarmVolume, setAlarmVolume] = useState(7);
   const [alarmSound, setAlarmSound] = useState<SoundOption>('bell');
   const [alarmDuration, setAlarmDuration] = useState<DurationOption>('once');

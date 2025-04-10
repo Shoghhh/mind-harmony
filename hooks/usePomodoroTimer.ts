@@ -36,8 +36,8 @@ export function usePomodoroTimer({
     setSelectedTodoId,
     dispatch
 }: UsePomodoroTimerParams & {
-    selectedTodoId: number | null;
-    setSelectedTodoId: (id: number | null) => void;
+    selectedTodoId: string | null;
+    setSelectedTodoId: (id: string | null) => void;
     dispatch: AppDispatch;
 }) {
     const [state, setState] = useState<TimerState>({

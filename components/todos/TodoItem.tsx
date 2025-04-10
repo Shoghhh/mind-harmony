@@ -9,9 +9,11 @@ import { useRouter } from 'expo-router';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Pressable } from 'react-native';
 import colors from '@/styles/colors';
+import { Todo } from '@/types';
+import formatDate from '@/utils/formatDate';
 
 interface TodoItemProps {
-    item: any;
+    item: Todo;
     viewMode: 'list' | 'tabbed';
     onDelete: () => void;
     onToggleComplete: () => void;
@@ -24,19 +26,6 @@ const TodoItem = gestureHandlerRootHOC(({ item, viewMode, onDelete, onToggleComp
     const { title, createdAt, completed, completedDate, priority, description } = item;
 
     const priorityColors = ["green.400", "yellow.400", "red.400"];
-
-    const formatDate = (dateStr: string) => {
-        const date = moment(dateStr);
-        const now = moment();
-
-        if (date.isSame(now, 'year')) {
-            if (date.isSame(now, 'day')) return `Today, ${date.format('hh:mm A')}`;
-            if (date.isSame(now.subtract(1, 'day'), 'day')) return `Yesterday, ${date.format('hh:mm A')}`;
-            if (date.isSame(now, 'week')) return `${date.format('dddd')}, ${date.format('hh:mm A')}`;
-            return date.format('MMMM D, hh:mm A');
-        }
-        return date.format('MMMM D, YYYY, hh:mm A');
-    };
 
 
     const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);

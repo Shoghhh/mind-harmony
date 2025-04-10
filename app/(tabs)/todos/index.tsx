@@ -2,17 +2,18 @@ import Icon from '@/assets/icons';
 import AnimatedProgress from '@/components/todos/AnimatedProgress';
 import TodoItem from '@/components/todos/TodoItem';
 import { toggleTodoCompletion } from '@/features/todos/todosSlice';
-import { deleteTodo } from '@/features/todos/todosThunks';
+import { deleteTodo, fetchTodos } from '@/features/todos/todosThunks';
 import { setDateOption } from '@/features/uiSlice';
 import { AppDispatch, RootState } from '@/store/store';
 import colors from '@/styles/colors';
 import { Todo } from '@/types';
 import { Date as myDate, DateLabels, Sort, SortLabels } from '@/utils/constants';
+import { parseFirestoreDate } from '@/utils/parseFirestoreData';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import moment from 'moment';
 import { Box, CheckIcon, ChevronDownIcon, Progress, Select } from 'native-base';
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -24,9 +25,8 @@ export default function TodoList() {
     const parsedDate = initialDate ? new Date(initialDate) : new Date()
 
     const todos = useSelector((state: RootState) => state.todos.todos);
-    // const loading = useSelector((state: RootState) => state.todos.loading);
-    // const error = useSelector((state: RootState) => state.todos.error);
-
+    const loading = useSelector((state: RootState) => state.todos.loading);
+    const error = useSelector((state: RootState) => state.todos.error);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [selectedTab, setSelectedTab] = useState<'incomplete' | 'completed'>('incomplete');
     const [completionProgress, setCompletionProgress] = useState<number>(0);
@@ -95,11 +95,11 @@ export default function TodoList() {
         })
     }
 
-    const handleDelete = (todoId: number) => {
+    const handleDelete = (todoId: string) => {
         dispatch(deleteTodo(todoId));
     };
 
-    const handleToggleComplete = (todoId: number) => {
+    const handleToggleComplete = (todoId: string) => {
         dispatch(toggleTodoCompletion(todoId));
     };
 
@@ -123,14 +123,36 @@ export default function TodoList() {
             : todos.filter(todo => selectedTab === 'incomplete' ? !todo.completed : todo.completed);
 
         const filteredByDate = filteredTodos.filter(todo => {
-            const todoDate = moment(todo.assignedDate);
-            const viewDate = moment(currentDate);
+            try {
+                const todoDate = parseFirestoreDate(todo.assignedDate);
+                const viewDate = new Date(currentDate);
 
-            switch (dateOption) {
-                case myDate.ByDay: return todoDate.isSame(viewDate, 'day');
-                case myDate.ByMonth: return todoDate.isSame(viewDate, 'month');
-                case myDate.ByYear: return todoDate.isSame(viewDate, 'year');
-                default: return true;
+                const todoUTCDate = new Date(Date.UTC(
+                    todoDate.getFullYear(),
+                    todoDate.getMonth(),
+                    todoDate.getDate()
+                ));
+
+                const viewUTCDate = new Date(Date.UTC(
+                    viewDate.getFullYear(),
+                    viewDate.getMonth(),
+                    viewDate.getDate()
+                ));
+
+                switch (dateOption) {
+                    case myDate.ByDay:
+                        return todoUTCDate.toDateString() === viewUTCDate.toDateString();
+                    case myDate.ByMonth:
+                        return todoUTCDate.getUTCFullYear() === viewUTCDate.getUTCFullYear() &&
+                            todoUTCDate.getUTCMonth() === viewUTCDate.getUTCMonth();
+                    case myDate.ByYear:
+                        return todoUTCDate.getUTCFullYear() === viewUTCDate.getUTCFullYear();
+                    default:
+                        return true;
+                }
+            } catch (error) {
+                console.error('Error processing todo:', todo.id, error);
+                return false;
             }
         });
 
@@ -144,17 +166,35 @@ export default function TodoList() {
                 break;
 
             case myDate.ByMonth:
-                groupedTodos = groupTodosBy(filteredByDate, 'YYYY-MM-DD')
+                groupedTodos = filteredByDate.reduce((groups: Record<string, Todo[]>, todo) => {
+                    const date = moment(parseFirestoreDate(todo.assignedDate));
+                    const key = date.format('YYYY-MM-DD');
+                    groups[key] = groups[key] || [];
+                    groups[key].push(todo);
+                    return groups;
+                }, {});
+
+                groupedTodos = Object.entries(groupedTodos)
+                    .map(([title, data]) => ({ title, data }))
                     .sort((a, b) => moment(a.title).valueOf() - moment(b.title).valueOf());
                 break;
 
             case myDate.ByYear:
-                groupedTodos = groupTodosBy(filteredByDate, 'YYYY-MM')
+                groupedTodos = filteredByDate.reduce((groups: Record<string, Todo[]>, todo) => {
+                    const date = moment(parseFirestoreDate(todo.assignedDate));
+                    const key = date.format('YYYY-MM');
+                    groups[key] = groups[key] || [];
+                    groups[key].push(todo);
+                    return groups;
+                }, {});
+
+                groupedTodos = Object.entries(groupedTodos)
+                    .map(([title, data]) => ({ title, data }))
                     .sort((a, b) => moment(a.title).valueOf() - moment(b.title).valueOf());
                 break;
 
             default:
-                groupedTodos = filteredByDate.map(todo => ({ title: '', data: [todo] }));
+                groupedTodos = [{ title: '', data: filteredByDate }];
         }
 
         return groupedTodos.map(group => ({
@@ -166,7 +206,7 @@ export default function TodoList() {
     const getSortFunction = (sortOption: Sort): (a: Todo, b: Todo) => number => {
         const direction = isAscending ? 1 : -1;
 
-        const getDateValue = (dateString?: string): number => {
+        const getDateValue = (dateString: string | null): number => {
             if (!dateString) return Infinity * direction;
             const date = new Date(dateString);
             return isNaN(date.getTime()) ? Infinity * direction : date.getTime();
@@ -222,7 +262,7 @@ export default function TodoList() {
     }, [todos, currentDate, dateOption]);
 
     useEffect(() => {
-        // dispatch(fetchTodos());
+        dispatch(fetchTodos());
     }, [dispatch]);
 
     useEffect(() => {
@@ -356,9 +396,11 @@ export default function TodoList() {
             </View>
         )}
 
-        <FlatList
+       {loading ? <ActivityIndicator size={'large'} color={colors.primary[600]}/> : <FlatList
             showsVerticalScrollIndicator={false}
             data={groupTodos()}
+            onRefresh={() => dispatch(fetchTodos())}
+            refreshing={loading}
             renderItem={({ item }) => (
                 <View>
                     {dateOption == 0 ? null : (
@@ -371,6 +413,7 @@ export default function TodoList() {
                     ))}
                 </View>
             )}
+            
             keyExtractor={(item, index) => index.toString()}
             contentContainerStyle={{ paddingBottom: 20 }}
             ListEmptyComponent={() => (
@@ -378,7 +421,7 @@ export default function TodoList() {
                     <Text className="text-gray-500">No todos available</Text>
                 </View>
             )}
-        />
+        />}
         <DateTimePickerModal display="spinner" isVisible={isDatePickerVisible} date={currentDate} mode="date" onConfirm={handleDateChange} onCancel={() => setDatePickerVisibility(false)} locale="en_GB" />
     </View>
     );

@@ -13,20 +13,15 @@ import {
   deleteTodoFailure,
   toggleTodoCompletion,
 } from './todosSlice';
-import {
-  fetchTodosApi,
-  addTodoApi,
-  updateTodoApi,
-  deleteTodoApi,
-} from '../../services/todoApi';
 import { Todo } from '../../types';
 import { AppThunk } from '@/store/store';
+import { addTodoToFirestore, updateTodoInFirestore, deleteTodoFromFirestore, fetchTodosFromFirestore } from '@/firebase/todoService';
 
-// Fetch all Todos
-export const fetchTodos = (): AppThunk => async (dispatch) => {
+export const fetchTodos = (): AppThunk => async (dispatch, getState) => {
+
   dispatch(fetchTodosStart());
   try {
-    const todos = await fetchTodosApi();
+    const todos = await fetchTodosFromFirestore();
     dispatch(fetchTodosSuccess(todos));
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -41,8 +36,8 @@ export const fetchTodos = (): AppThunk => async (dispatch) => {
 export const addTodo = (todo: Todo): AppThunk => async (dispatch) => {
   dispatch(addTodoStart());
   try {
-    // const newTodo = await addTodoApi(todo);
-    dispatch(addTodoSuccess(todo));
+    const newTodo = await addTodoToFirestore(todo);
+    dispatch(addTodoSuccess(newTodo));
   } catch (error: unknown) {
     if (error instanceof Error) {
       dispatch(addTodoFailure(error.message));
@@ -53,37 +48,36 @@ export const addTodo = (todo: Todo): AppThunk => async (dispatch) => {
 };
 
 // Update a Todo
-export const updateTodo = (id: number, updatedTodo: Todo): AppThunk => async (dispatch) => {
+export const updateTodo = (id: string, updatedTodo: Todo): AppThunk => async (dispatch) => {
   dispatch(updateTodoStart());
   try {
-    // const updated = await updateTodoApi(id, updatedTodo);
-    dispatch(updateTodoSuccess(updatedTodo));
+    const updated = await updateTodoInFirestore(id, updatedTodo);
+    dispatch(updateTodoSuccess(updated));
   } catch (error: unknown) {
     if (error instanceof Error) {
       dispatch(updateTodoFailure(error.message));
     } else {
-      dispatch(addTodoFailure('An unknown error occurred'));
+      dispatch(updateTodoFailure('An unknown error occurred'));
     }
   }
 };
 
 // Delete a Todo
-export const deleteTodo = (id: number): AppThunk => async (dispatch) => {
+export const deleteTodo = (id: string): AppThunk => async (dispatch) => {
   dispatch(deleteTodoStart());
   try {
-    // await deleteTodoApi(id);
+    await deleteTodoFromFirestore(id);
     dispatch(deleteTodoSuccess(id));
   } catch (error: unknown) {
     if (error instanceof Error) {
       dispatch(deleteTodoFailure(error.message));
     } else {
-      dispatch(addTodoFailure('An unknown error occurred'));
+      dispatch(deleteTodoFailure('An unknown error occurred'));
     }
   }
 };
 
-
-export const toggleTodoCompletionAsync = (id: number): AppThunk => async (dispatch, getState) => {
+export const toggleTodoCompletionAsync = (id: string): AppThunk => async (dispatch, getState) => {
   const currentTodo = getState().todos.todos.find((todo: Todo) => todo.id === id);
   if (!currentTodo) {
     console.error("Todo not found.");
@@ -93,12 +87,10 @@ export const toggleTodoCompletionAsync = (id: number): AppThunk => async (dispat
 
   try {
     dispatch(toggleTodoCompletion(id));
-    // const updatedTodo = await updateTodoApi(id, { completed: newCompletionStatus });
-    dispatch(updateTodoSuccess({ ...currentTodo, completed: newCompletionStatus }));
+    const updatedTodo = await updateTodoInFirestore(id, { completed: newCompletionStatus });
+    dispatch(updateTodoSuccess(updatedTodo));
   } catch (error) {
     dispatch(toggleTodoCompletion(id));
-    // Handle error (show toast, alert, etc.)
     console.error("Error toggling todo completion:", error);
-    // Optionally, dispatch a failure action or show a message to the user
   }
 };

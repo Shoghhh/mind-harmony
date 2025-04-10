@@ -1,4 +1,3 @@
-// components/AuthListener.tsx
 import { useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/firebase/firebase';
@@ -10,16 +9,14 @@ export default function AuthListener() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Update Redux store with current user and set initialized to true
       dispatch(setAuthState({ 
         user, 
         initialized: true 
       }));
     });
     
-    // Cleanup function - removes the listener when component unmounts
     return unsubscribe;
   }, [dispatch]);
 
-  return null; // This component doesn't render anything
+  return null;
 }

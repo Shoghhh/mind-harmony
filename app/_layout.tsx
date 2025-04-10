@@ -13,6 +13,7 @@ import AuthListener from '@/providers/AuthListener';
 import { ActivityIndicator } from 'react-native';
 import { ToastProvider } from '@/providers/ToastProvider';
 import { useSelector } from 'react-redux';
+import colors from '@/styles/colors';
 
 export default function RootLayout() {
     return (
@@ -46,7 +47,7 @@ function ReduxAuthLayout() {
     if (!initialized) {
         return (
             <View style={{ flex: 1, justifyContent: 'center' }}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color={colors.primary[600]} />
             </View>
         );
     }

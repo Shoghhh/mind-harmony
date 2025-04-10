@@ -19,7 +19,7 @@ import { loginWithEmail, loginWithGoogle, resetPassword, signUpWithEmail } from 
 import { AppDispatch, RootState } from "@/store/store";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { setToastMessage } from "@/features/auth/authSlice";
+import { setToastMessage, setAuthAction } from "@/features/auth/authSlice";
 
 GoogleSignin.configure({
     webClientId: '602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com',
@@ -30,9 +30,8 @@ export default function AuthScreen() {
     const { colors } = useTheme();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [authAction, setAuthAction] = useState<'login' | 'signup' | 'resetpass'>('signup');
     const dispatch = useDispatch<AppDispatch>();
-    const { loading, user, googleLoading } = useSelector((state: RootState) => state.auth);
+    const { loading, user, googleLoading , authAction} = useSelector((state: RootState) => state.auth);
     const [hasNavigatedToVerify, setHasNavigatedToVerify] = useState(false);
 
     useEffect(() => {
@@ -93,7 +92,7 @@ export default function AuthScreen() {
 
             if (success) {
                 setEmail('');
-                setAuthAction('login');
+                dispatch(setAuthAction('login'));
             }
         } catch (error: any) {
             const errorMessage = error?.message || 'An unexpected error occurred during password reset.';
@@ -167,7 +166,7 @@ export default function AuthScreen() {
                                 color={'primary.200'}
                                 alignSelf="flex-end"
                                 mt="2"
-                                onPress={() => setAuthAction('resetpass')}
+                                onPress={() => dispatch(setAuthAction('resetpass'))}
                             >
                                 Forgot password?
                             </Link>
@@ -216,7 +215,7 @@ export default function AuthScreen() {
                         </>}
 
                     <Link
-                        onPress={() => setAuthAction(authAction === 'login' ? 'signup' : 'login')}
+                        onPress={() => dispatch(setAuthAction(authAction === 'login' ? 'signup' : 'login'))}
                         alignSelf={'center'}
                         mt="2"
                     >

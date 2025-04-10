@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateTodoTimeSpent } from '@/features/todos/todosSlice';
 
-export function useTimeTracking(isActive: boolean, mode: string, todoId?: number) {
+export function useTimeTracking(isActive: boolean, mode: string, todoId?: string) {
   const dispatch = useDispatch();
 
   useEffect(() => {
