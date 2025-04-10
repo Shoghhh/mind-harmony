@@ -1,26 +1,42 @@
 import { useBottomSheet } from "@/providers/BottomSheetProvider";
 import { usePomodoro } from "@/providers/PomodoroContext";
-import { RootState } from "@/store/store";
+import { AppDispatch, RootState } from "@/store/store";
 import { Todo } from "@/types";
 import { Box, FlatList, Pressable, Text, HStack, Icon, View, Divider } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
+import { Timestamp } from 'firebase/firestore';
+import { useDispatch } from "react-redux";
+import { fetchTodos } from "@/features/todos/todosThunks";
+import { ActivityIndicator } from "react-native";
+import colors from "@/styles/colors";
 
 const TodoSelectionComponent = ({ onSelect }: { onSelect: (todo: Todo) => void }) => {
-    const todos = useSelector((state: RootState) => state.todos.todos);
+    const {todos, loading} = useSelector((state: RootState) => state.todos);
     const { selectedTodoId, setSelectedTodoId } = usePomodoro();
     const { closeSheet } = useBottomSheet();
+    const dispatch = useDispatch<AppDispatch>()
 
     const groupedTodos = useMemo(() => {
         const currentYear = new Date().getFullYear();
         const incompleteTodos = todos.filter(todo => !todo.completed);
 
         const grouped = incompleteTodos.reduce((acc, todo) => {
-            const date = todo.assignedDate ? parseISO(todo.assignedDate) : new Date();
+            let date: Date;
+            if (todo.assignedDate instanceof Timestamp) {
+                date = todo.assignedDate.toDate();
+            } else if (typeof todo.assignedDate === 'string') {
+                date = parseISO(todo.assignedDate);
+            } else {
+                date = new Date();
+            }
+
+            if (isNaN(date.getTime())) return acc;
+
             const dateYear = date.getFullYear();
-            let dateKey;
+            let dateKey: string;
 
             if (isToday(date)) {
                 dateKey = "Today";
@@ -52,12 +68,15 @@ const TodoSelectionComponent = ({ onSelect }: { onSelect: (todo: Todo) => void }
                 return acc;
             }, {} as Record<string, Todo[]>);
     }, [todos]);
-
     const onSelectItem = (item: Todo) => {
         onSelect(item);
         setSelectedTodoId(selectedTodoId === item.id ? null : item.id);
         closeSheet();
     };
+
+    useEffect(() => {
+        dispatch(fetchTodos())
+    }, [])
 
     return (
         <Box p={4} flex={1}>
@@ -65,7 +84,7 @@ const TodoSelectionComponent = ({ onSelect }: { onSelect: (todo: Todo) => void }
                 <Text fontSize="xl" fontWeight="bold" mb={4}>Select a Todo</Text>
             </View>
 
-            <FlatList
+            {loading ? <ActivityIndicator color={colors.primary[600]} size={'large'}/> : <FlatList
                 data={Object.entries(groupedTodos)}
                 keyExtractor={([date]) => date}
                 contentContainerStyle={{ paddingBottom: 100 }}
@@ -128,7 +147,7 @@ const TodoSelectionComponent = ({ onSelect }: { onSelect: (todo: Todo) => void }
                     </Box>
                 )}
                 showsVerticalScrollIndicator={false}
-            />
+            />}
         </Box>
     );
 };

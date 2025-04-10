@@ -134,7 +134,6 @@ const PomodoroTimer = () => {
               p={3}
               rounded="xl"
               w="full"
-              shadow={1}
               _pressed={{ opacity: 0.8 }}
             >
               <VStack space={2}>

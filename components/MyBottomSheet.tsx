@@ -29,6 +29,7 @@ const MyBottomSheet = ({
       enablePanDownToClose
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
+      activeOffsetY={[-10, 10]}
       onChange={handleSheetChanges}
       handleIndicatorStyle={styles.handleIndicator}
       backgroundStyle={styles.background}
