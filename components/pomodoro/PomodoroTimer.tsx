@@ -93,7 +93,7 @@ const PomodoroTimer = () => {
     <Box flex={1} mb={70}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }}>
         <VStack space={4} alignItems="center" pt={6} px={6}>
-          <HStack space={3} bg={cardBg} p={1.5} rounded="xl" shadow={1}>
+          <HStack space={3} bg={cardBg} p={1.5} rounded="xl" >
             {(['pomodoro', 'shortRest', 'longRest'] as TimerMode[]).map((mode) => (
               <Pressable
                 key={mode}
@@ -112,7 +112,7 @@ const PomodoroTimer = () => {
             ))}
           </HStack>
 
-          <Box bg={cardBg} p={2} rounded="full" shadow={3} width={'100%'}>
+          <Box bg={cardBg} p={2} rounded="full"  width={'100%'}>
             <ProgressIndicator
               currentTime={state.time}
               totalTime={state.mode === 'pomodoro' ? pomodoroTime :

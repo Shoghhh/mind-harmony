@@ -30,13 +30,6 @@ const ProgressIndicator = ({
   const circumference = 2 * Math.PI * 90;
   const strokeWidth = 10;
 
-  const _colors = {
-    pomodoro: '#e74c3c',
-    shortRest: '#f39c12',
-    longRest: '#2ecc71',
-    background: colors.primary[100]
-  };
-
   useEffect(() => {
     progress.value = withTiming(currentTime / totalTime, {
       duration: 1000,

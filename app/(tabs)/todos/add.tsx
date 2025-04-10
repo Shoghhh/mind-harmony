@@ -89,6 +89,20 @@ export default function AddTodo() {
     }
   };
 
+  const getPriorityColorScheme = (value: Priority) => {
+    console.log(value, priority)
+    switch (value) {
+      case Priority.High:
+        return 'red';
+      case Priority.Medium:
+        return 'orange';
+      case Priority.Low:
+        return 'green';
+      default:
+        return 'gray';
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -119,9 +133,10 @@ export default function AddTodo() {
                     px={6}
                     py={2}
                     borderRadius="md"
-                    colorScheme={priority === value ? 'purple.600' : 'primary.525'}
+                    colorScheme={priority === value ? `${getPriorityColorScheme(value)}`: `${getPriorityColorScheme(value)}.300` }
+                    bg={`${getPriorityColorScheme(value)}.${priority === value ? 500 : 50}`}
                     borderWidth={1}
-                    borderColor={"primary.600"}
+                    borderColor={getPriorityColorScheme(value)}
                     variant={priority === value ? 'solid' : 'subtle'}
                     _text={{
                       fontSize: 'lg',

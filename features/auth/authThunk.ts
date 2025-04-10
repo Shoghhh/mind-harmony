@@ -84,11 +84,6 @@ export const loginWithEmail = (email: string, password: string): AppThunk => asy
         }
 
         dispatch(setUser(userCredential.user));
-        dispatch(setToastMessage({
-            title: 'Success',
-            status: 'success',
-            description: 'Login successful.'
-        }));
     } catch (error: any) {
         const message = showError(error);
         dispatch(setToastMessage({ title: 'Error', status: 'error', description: message }));
@@ -132,12 +127,6 @@ export const loginWithGoogle = (): AppThunk => async dispatch => {
         await createUserInFirestoreIfNotExists(userCredential.user);
 
         dispatch(setUser(userCredential.user));
-
-        dispatch(setToastMessage({
-            title: 'Success',
-            status: 'success',
-            description: 'Login with Google successful.'
-        }));
     } catch (error: any) {
         let message = 'Google sign-in failed. Please try again.';
 
