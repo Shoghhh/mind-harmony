@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Keyboard, TouchableWithoutFeedback } from "react-native";
-import auth from '@react-native-firebase/auth';
+import { Keyboard, TouchableWithoutFeedback } from "react-native";
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import {
     Box,
@@ -16,8 +15,11 @@ import {
     useToast
 } from "native-base";
 import { Ionicons } from "@expo/vector-icons";
-import { MyToast } from "@/components/MyToast";
-import { useAuth } from "@/providers/AuthContext";
+import { loginWithEmail, loginWithGoogle, resetPassword, signUpWithEmail } from "@/features/auth/authThunk";
+import { AppDispatch, RootState } from "@/store/store";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { setToastMessage } from "@/features/auth/authSlice";
 
 GoogleSignin.configure({
     webClientId: '602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com',
@@ -26,137 +28,82 @@ GoogleSignin.configure({
 export default function AuthScreen() {
     const router = useRouter();
     const { colors } = useTheme();
-    const toast = useToast();
-    const { user } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [googleLoading, setGoogleLoading] = useState(false);
     const [authAction, setAuthAction] = useState<'login' | 'signup' | 'resetpass'>('signup');
+    const dispatch = useDispatch<AppDispatch>();
+    const { loading, user, googleLoading } = useSelector((state: RootState) => state.auth);
+    const [hasNavigatedToVerify, setHasNavigatedToVerify] = useState(false);
 
     useEffect(() => {
-        if (user) {
-            router.replace("/(tabs)/dashboard");
+        if (user && !hasNavigatedToVerify) {
+            if (user.emailVerified) {
+                router.replace('/(tabs)/dashboard');
+            } else {
+                router.push('/verify');
+                setHasNavigatedToVerify(true);
+            }
         }
     }, [user]);
 
     useEffect(() => {
-        setEmail('')
-        setPassword('')
-    }, [authAction])
+        setEmail('');
+        setPassword('');
+    }, [authAction, user]);
 
-    const showToast = (title: string, status: 'success' | 'error' | 'warning' | 'info', description?: string) => {
-        toast.show({
-            render: () => (
-                <MyToast
-                    title={title}
-                    description={description}
-                    status={status}
-                />
-            ),
-            placement: 'top',
-            duration: 2000,
-        });
-    };
-
-    const handleGoogleSignIn = async () => {
-        try {
-            setGoogleLoading(true);
-            await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-            const signInResult = await GoogleSignin.signIn();
-            const tokens = await GoogleSignin.getTokens();
-            const idToken = tokens.idToken;
-
-            if (!idToken) throw new Error('No ID token received');
-
-            const credential = auth.GoogleAuthProvider.credential(idToken);
-            await auth().signInWithCredential(credential);
-        } catch (error) {
-            console.error(error);
-            showToast('Error', 'error', 'Google sign-in failed. Please try again.');
-        } finally {
-            setGoogleLoading(false);
-        }
-    };
 
     const handleEmailAuth = async () => {
         try {
             if (!email || !password) {
-                showToast('Error', 'error', 'Please enter both email and password');
+                dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Please enter both email and password' }));
                 return;
             }
 
-            if (authAction === 'signup' && password.length < 6) {
-                showToast('Error', 'error', 'Password should be at least 6 characters');
-                return;
-            }
-
-            setLoading(true);
-
-            if (authAction === 'login') {
-                await auth().signInWithEmailAndPassword(email, password);
+            if (authAction === 'signup') {
+                await dispatch(signUpWithEmail(email, password));
             } else {
-                const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-                await userCredential.user.sendEmailVerification();
-                showToast(
-                    'Success',
-                    'success',
-                    'Account created! Please verify your email.'
-                );
+                await dispatch(loginWithEmail(email, password));
             }
         } catch (error: any) {
-            handleAuthError(error);
-        } finally {
-            setLoading(false);
+            const errorMessage = error?.message || 'An unexpected error occurred during authentication.';
+            dispatch(setToastMessage({ title: 'Error', status: 'error', description: errorMessage }));
         }
     };
 
-    const handleAuthError = (error: any) => {
-        console.error(error);
-        let message = "Authentication failed. Please try again.";
-
-        switch (error.code) {
-            case 'auth/user-not-found':
-                message = "No account found with this email.";
-                break;
-            case 'auth/wrong-password':
-                message = "Incorrect password.";
-                break;
-            case 'auth/email-already-in-use':
-                message = "This email is already registered.";
-                break;
-            case 'auth/invalid-email':
-                message = "Please enter a valid email address.";
-                break;
-            case 'auth/weak-password':
-                message = "Password should be at least 6 characters.";
-                break;
-            case 'auth/operation-not-allowed':
-                message = "Email/password accounts are not enabled.";
-                break;
+    const handleGoogleSignIn = async () => {
+        try {
+            await dispatch(loginWithGoogle());
+        } catch (error: any) {
+            const errorMessage = error?.message || 'An unexpected error occurred during Google sign-in.';
+            dispatch(setToastMessage({
+                title: 'Google Sign-In Error',
+                status: 'error',
+                description: errorMessage
+            }));
         }
-
-        showToast('Error', 'error', message);
     };
 
     const handlePasswordReset = async () => {
         if (!email) {
-            showToast('Error', 'error', 'Please enter your email first');
+            dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Please enter your email first' }));
             return;
         }
-        setLoading(true)
         try {
-            await auth().sendPasswordResetEmail(email);
-            showToast('Success', 'success', 'Password reset email sent. Check your inbox.');
-            setEmail('')
-            setAuthAction('login')
-        } catch (error) {
-            showToast('Error', 'error', 'Failed to send reset email. Please try again.');
-        } finally {
-            setLoading(false)
+            const success = await dispatch(resetPassword(email));
+
+            if (success) {
+                setEmail('');
+                setAuthAction('login');
+            }
+        } catch (error: any) {
+            const errorMessage = error?.message || 'An unexpected error occurred during password reset.';
+            dispatch(setToastMessage({
+                title: 'Password Reset Error',
+                status: 'error',
+                description: errorMessage
+            }));
         }
     };
-
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -195,7 +142,7 @@ export default function AuthScreen() {
                                 onChangeText={setEmail}
                                 autoCapitalize="none"
                                 keyboardType="email-address"
-                                isDisabled={loading}
+                                isDisabled={loading || googleLoading}
                             />
                         </FormControl>
 
@@ -210,7 +157,7 @@ export default function AuthScreen() {
                                     value={password}
                                     onChangeText={setPassword}
                                     type="password"
-                                    isDisabled={loading}
+                                    isDisabled={loading || googleLoading}
                                 />
                             </FormControl>
                         )}

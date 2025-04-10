@@ -1,14 +1,15 @@
 import Header from "@/components/navigation/Header";
 import TabBar from "@/components/navigation/TabBar";
-import { useAuth } from "@/providers/AuthContext";
 import Background from "@/providers/Background";
+import { RootState } from "@/store/store";
 import { Redirect, Tabs } from "expo-router";
+import { useSelector } from "react-redux";
 
 export default function TabLayout() {
-  const { user } = useAuth();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   // This is where we actually enforce protection
-  if (!user) {
+  if (!user?.emailVerified) {
     return <Redirect href="/auth" />;
   }
 

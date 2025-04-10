@@ -1,5 +1,5 @@
 import '../global.css';
-import store from "@/store/store";
+import store, { RootState } from "@/store/store";
 import { Slot } from "expo-router";
 import { StatusBar, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -9,36 +9,39 @@ import { PomodoroProvider } from "@/providers/PomodoroContext";
 import Background from "@/providers/Background";
 import { NativeBaseProvider } from "native-base";
 import { customTheme } from '@/styles/theme';
-import { AuthProvider, useAuth } from '@/providers/AuthContext'; // Only import provider here
+import AuthListener from '@/providers/AuthListener';
 import { ActivityIndicator } from 'react-native';
+import { ToastProvider } from '@/providers/ToastProvider';
+import { useSelector } from 'react-redux';
 
 export default function RootLayout() {
     return (
         <Provider store={store}>
             <NativeBaseProvider theme={customTheme}>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                    <PomodoroProvider>
-                        <BottomSheetProvider>
-                            <Background>
-                                <AuthProvider>
-                                    <AuthLayout />
+                <ToastProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                        <PomodoroProvider>
+                            <BottomSheetProvider>
+                                <Background>
+                                    <AuthListener />
+                                    <ReduxAuthLayout />
                                     <StatusBar
                                         backgroundColor="transparent"
                                         barStyle="light-content"
                                         translucent
                                     />
-                                </AuthProvider>
-                            </Background>
-                        </BottomSheetProvider>
-                    </PomodoroProvider>
-                </GestureHandlerRootView>
+                                </Background>
+                            </BottomSheetProvider>
+                        </PomodoroProvider>
+                    </GestureHandlerRootView>
+                </ToastProvider>
             </NativeBaseProvider>
         </Provider>
     );
 }
 
-function AuthLayout() {
-    const { user, initialized } = useAuth();
+function ReduxAuthLayout() {
+    const { initialized } = useSelector((state: RootState) => state.auth);
 
     if (!initialized) {
         return (

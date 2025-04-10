@@ -3,7 +3,8 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { Box, Button, Image } from "native-base";
 import { useFonts, Borel_400Regular } from '@expo-google-fonts/borel';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useAuth } from "@/providers/AuthContext";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 GoogleSignin.configure({
   webClientId: '602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com',
@@ -12,13 +13,13 @@ GoogleSignin.configure({
 export default function HomeScreen() {
   const router = useRouter();
   const [fontsLoaded] = useFonts({ Borel_400Regular });
-  const { user } = useAuth();
+  const {user} = useSelector((state:RootState ) => state.auth)
     
   if (!fontsLoaded) return null;
   
-  if (user) {
+  if (user && user.emailVerified) {
     return <Redirect href="/(tabs)/dashboard" />;
-  }
+  } 
   return (
     <Box flex={1} justifyContent={'space-between'}>
       <LinearGradient
