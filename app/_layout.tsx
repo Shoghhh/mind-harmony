@@ -15,6 +15,16 @@ import { ToastProvider } from '@/providers/ToastProvider';
 import { useSelector } from 'react-redux';
 import colors from '@/styles/colors';
 
+//reset defaults in the bottomsheet pomodoro settings
+// add page priority colors
+// completed update doesnt update in the firestore
+// move sign out to service
+//call fetch todos somewhere at the beginning
+// implement profile, dashboard
+// translation arm eng
+// user image, name register
+// todo id while saving
+
 export default function RootLayout() {
     return (
         <Provider store={store}>

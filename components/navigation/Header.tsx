@@ -14,7 +14,7 @@ interface HeaderProps {
     showEdit?: boolean;
     showSettings?: boolean;
     leftAction?: () => void;
-    onPressSettings: any
+    onPressSettings?: any
 }
 
 const Header = memo(({ title, showBack, showEdit, leftAction, showSettings, onPressSettings }: HeaderProps) => {

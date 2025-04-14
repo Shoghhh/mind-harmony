@@ -9,7 +9,7 @@ import { Priority, PriorityLabels } from '@/utils/constants';
 import { Box, Button, Text, VStack, HStack, Badge, ScrollView, Divider, Icon } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import colors from '@/styles/colors';
-import formatTodoDate from '@/utils/formatTodoDate';
+import formatDate from '@/utils/formatDate';
 
 export default function TodoDetail() {
     const router = useRouter();
@@ -106,7 +106,7 @@ export default function TodoDetail() {
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
-                            {formatTodoDate(todo.createdAt)}
+                            {formatDate(todo.createdAt)}
                         </Text>
                     </Box>
 
@@ -118,7 +118,7 @@ export default function TodoDetail() {
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
-                            {formatTodoDate(todo.createdAt)}
+                            {moment(todo.assignedDate.toDate()).format('DD MMMM YYYY')}
                         </Text>
                     </Box>
 
@@ -131,7 +131,7 @@ export default function TodoDetail() {
                                 </Text>
                             </HStack>
                             <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
-                                {formatTodoDate(todo.createdAt)}
+                                {formatDate(todo.completedDate)}
                             </Text>
                             {todo.timeSpent > 0 && (
                                 <HStack alignItems="center" space={2} ml={6} mt={1}>

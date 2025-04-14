@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addTodo, updateTodo } from '@/features/todos/todosThunks';
 import { AppDispatch, RootState } from '@/store/store';
 import { Timestamp } from 'firebase/firestore';
+import formatDate from '@/utils/formatDate';
+import moment from 'moment';
 
 export default function AddTodo() {
   const router = useRouter();
@@ -19,9 +21,6 @@ export default function AddTodo() {
   const { date, id } = useLocalSearchParams();
   const todoId = Array.isArray(id) ? id[0] : id;
 
-  const initialDate = Array.isArray(date) ? date[0] : date;
-  const parsedDate = initialDate ? new Date(initialDate) : new Date();
-  const [assignedDate, setAssignedDate] = useState(parsedDate);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const priorityOptions = Object.entries(PriorityLabels).map(([key, label]) => ({
@@ -34,12 +33,22 @@ export default function AddTodo() {
   );
   const { loading } = useSelector((state: RootState) => state.todos);
 
+  const [assignedDate, setAssignedDate] = useState<Date | null>(null);
+
   useEffect(() => {
     if (existingTodo) {
       setTitle(existingTodo.title);
       setDescription(existingTodo.description);
       setPriority(existingTodo.priority);
-      setAssignedDate(new Date(existingTodo.assignedDate));
+  
+      const assigned = existingTodo.assignedDate instanceof Timestamp
+        ? existingTodo.assignedDate.toDate()
+        : new Date(existingTodo.assignedDate);
+      setAssignedDate(assigned);
+    } else if (!assignedDate) {
+      const initialDateParam = Array.isArray(date) ? date[0] : date;
+      const initialDate = initialDateParam ? new Date(initialDateParam) : new Date();
+      setAssignedDate(initialDate);
     }
   }, [existingTodo]);
 
@@ -54,22 +63,27 @@ export default function AddTodo() {
       return;
     }
 
-    const formattedAssignedDate = `${assignedDate.getFullYear()}-${(assignedDate.getMonth() + 1).toString().padStart(2, '0')}-${assignedDate.getDate().toString().padStart(2, '0')}`;
-
     const updatedTodo: Todo = {
       id: todoId || '',
       title,
       description,
       priority,
-      createdAt: existingTodo?.createdAt || Timestamp.now().toDate().toISOString(),
-      assignedDate: formattedAssignedDate,
+      createdAt: existingTodo?.createdAt instanceof Timestamp
+        ? existingTodo.createdAt
+        : Timestamp.now(),
+      assignedDate: assignedDate ? Timestamp.fromDate(assignedDate) : null,
       completed: existingTodo?.completed ?? false,
-      completedDate: existingTodo?.completedDate || null,
+      completedDate: existingTodo?.completedDate instanceof Timestamp
+        ? existingTodo.completedDate
+        : (existingTodo?.completedDate
+          ? Timestamp.fromDate(new Date(existingTodo.completedDate))
+          : null),
       timeSpent: existingTodo?.timeSpent || 0,
     };
+
     const navigate = () => router.push({
       pathname: '/(tabs)/todos',
-      params: { date: updatedTodo.assignedDate }
+      params: { date: assignedDate.toISOString() } // Pass ISO string for navigation
     });
 
     try {
@@ -79,7 +93,6 @@ export default function AddTodo() {
         await dispatch(addTodo(updatedTodo));
       }
       navigate();
-
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error(error.message);
@@ -90,7 +103,6 @@ export default function AddTodo() {
   };
 
   const getPriorityColorScheme = (value: Priority) => {
-    console.log(value, priority)
     switch (value) {
       case Priority.High:
         return 'red';
@@ -133,7 +145,7 @@ export default function AddTodo() {
                     px={6}
                     py={2}
                     borderRadius="md"
-                    colorScheme={priority === value ? `${getPriorityColorScheme(value)}`: `${getPriorityColorScheme(value)}.300` }
+                    colorScheme={priority === value ? `${getPriorityColorScheme(value)}` : `${getPriorityColorScheme(value)}.300`}
                     bg={`${getPriorityColorScheme(value)}.${priority === value ? 500 : 50}`}
                     borderWidth={1}
                     borderColor={getPriorityColorScheme(value)}
@@ -156,7 +168,7 @@ export default function AddTodo() {
             </Text>
             <Pressable onPress={() => setDatePickerVisibility(true)} className="text-xl rounded-none border-0 border-b-2 border-primary-600 h-[40] mt-[15]">
               <Text fontSize="2xl" color="primary.525">
-                {`${assignedDate.getFullYear()}-${(assignedDate.getMonth() + 1).toString().padStart(2, '0')}-${assignedDate.getDate().toString().padStart(2, '0')}`}
+                {moment(assignedDate).format('DD MMMM YYYY')}
               </Text>
             </Pressable>
           </Box>
@@ -198,15 +210,9 @@ export default function AddTodo() {
             isVisible={isDatePickerVisible}
             mode="date"
             display="spinner"
-            date={assignedDate}
+            date={assignedDate ?? undefined}
             onConfirm={(date) => {
-
-              const utcDate = new Date(Date.UTC(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-              ));
-              setAssignedDate(utcDate);
+              setAssignedDate(date);
               setDatePickerVisibility(false);
             }}
             onCancel={() => setDatePickerVisibility(false)}

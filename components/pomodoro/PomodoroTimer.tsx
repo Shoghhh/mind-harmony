@@ -254,16 +254,6 @@ const PomodoroTimer = () => {
               Reset
             </Button>
           </HStack>
-
-          <Button
-            leftIcon={<Icon as={Feather} name="settings" size="md" />}
-            onPress={openSettingsSheet}
-            variant="ghost"
-            _text={{ color: secondaryText }}
-            _pressed={{ opacity: 0.6 }}
-          >
-            Timer Settings
-          </Button>
         </VStack>
       </ScrollView>
     </Box>

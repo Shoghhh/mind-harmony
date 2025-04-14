@@ -8,8 +8,10 @@ import { AppDispatch, RootState } from '@/store/store';
 import colors from '@/styles/colors';
 import { Todo } from '@/types';
 import { Date as myDate, DateLabels, Sort, SortLabels } from '@/utils/constants';
-import { parseFirestoreDate } from '@/utils/parseFirestoreData';
+import formatDate from '@/utils/formatDate';
+
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Timestamp } from 'firebase/firestore';
 import moment from 'moment';
 import { Box, CheckIcon, ChevronDownIcon, Progress, Select } from 'native-base';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -65,12 +67,7 @@ export default function TodoList() {
     }, [dateOption, viewMode]);
 
     const handleDateChange = (date: Date) => {
-        const utcDate = new Date(Date.UTC(
-            date.getFullYear(),
-            date.getMonth(),
-            date.getDate()
-        ));
-        setCurrentDate(utcDate)
+        setCurrentDate(date);
         setDatePickerVisibility(false);
     };
 
@@ -107,16 +104,6 @@ export default function TodoList() {
         setViewMode(viewMode === 'list' ? 'tabbed' : 'list');
     };
 
-    const groupTodosBy = (todos: Todo[], format: string): { title: string; data: Todo[] }[] => {
-        const grouped = todos.reduce((acc: Record<string, Todo[]>, todo) => {
-            const key = moment(todo.assignedDate).format(format);
-            acc[key] = acc[key] || [];
-            acc[key].push(todo);
-            return acc;
-        }, {});
-
-        return Object.entries(grouped).map(([title, data]) => ({ title, data }));
-    };
     const groupTodos = () => {
         const filteredTodos = viewMode === 'list'
             ? todos
@@ -124,7 +111,7 @@ export default function TodoList() {
 
         const filteredByDate = filteredTodos.filter(todo => {
             try {
-                const todoDate = parseFirestoreDate(todo.assignedDate);
+                const todoDate = (todo.assignedDate as Timestamp).toDate();
                 const viewDate = new Date(currentDate);
 
                 const todoUTCDate = new Date(Date.UTC(
@@ -167,8 +154,8 @@ export default function TodoList() {
 
             case myDate.ByMonth:
                 groupedTodos = filteredByDate.reduce((groups: Record<string, Todo[]>, todo) => {
-                    const date = moment(parseFirestoreDate(todo.assignedDate));
-                    const key = date.format('YYYY-MM-DD');
+                    const date = (todo.assignedDate as Timestamp).toDate();
+                    const key = moment(date).format('YYYY-MM-DD');
                     groups[key] = groups[key] || [];
                     groups[key].push(todo);
                     return groups;
@@ -181,8 +168,8 @@ export default function TodoList() {
 
             case myDate.ByYear:
                 groupedTodos = filteredByDate.reduce((groups: Record<string, Todo[]>, todo) => {
-                    const date = moment(parseFirestoreDate(todo.assignedDate));
-                    const key = date.format('YYYY-MM');
+                    const date = (todo.assignedDate as Timestamp).toDate();
+                    const key = moment(date).format('YYYY-MM');
                     groups[key] = groups[key] || [];
                     groups[key].push(todo);
                     return groups;
@@ -241,12 +228,18 @@ export default function TodoList() {
             const currentMonth = selectedDateMoment.format('YYYY-MM');
             const currentYear = selectedDateMoment.format('YYYY');
 
+            const todoDate = todo.assignedDate instanceof Timestamp
+                ? todo.assignedDate.toDate()
+                : new Date(todo.assignedDate);
+
+            const todoMoment = moment(todoDate);
+
             if (dateOption === myDate.ByDay) {
-                return moment(todo.assignedDate).format('YYYY-MM-DD') === currentDay;
+                return todoMoment.format('YYYY-MM-DD') === currentDay;
             } else if (dateOption === myDate.ByMonth) {
-                return moment(todo.assignedDate).format('YYYY-MM') === currentMonth;
+                return todoMoment.format('YYYY-MM') === currentMonth;
             } else if (dateOption === myDate.ByYear) {
-                return moment(todo.assignedDate).format('YYYY') === currentYear;
+                return todoMoment.format('YYYY') === currentYear;
             }
             return true;
         });
@@ -396,7 +389,7 @@ export default function TodoList() {
             </View>
         )}
 
-       {loading ? <ActivityIndicator size={'large'} color={colors.primary[600]}/> : <FlatList
+        {loading ? <ActivityIndicator size={'large'} color={colors.primary[600]} /> : <FlatList
             showsVerticalScrollIndicator={false}
             data={groupTodos()}
             onRefresh={() => dispatch(fetchTodos())}
@@ -413,7 +406,7 @@ export default function TodoList() {
                     ))}
                 </View>
             )}
-            
+
             keyExtractor={(item, index) => index.toString()}
             contentContainerStyle={{ paddingBottom: 20 }}
             ListEmptyComponent={() => (
