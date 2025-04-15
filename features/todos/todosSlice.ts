@@ -1,16 +1,21 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Todo } from '../../types';
+import { Timestamp } from 'firebase/firestore';
 
 interface TodosState {
   todos: Todo[];
   loading: boolean;
   error: string | null;
+  updateLoading: boolean
+  deleteLoading: boolean;
 }
 
 const initialState: TodosState = {
   todos: [],
   loading: false,
   error: null,
+  updateLoading: false,
+  deleteLoading: false
 };
 
 const todosSlice = createSlice({
@@ -42,18 +47,18 @@ const todosSlice = createSlice({
       state.error = action.payload;
     },
     updateTodoStart(state) {
-      state.loading = true;
+      state.updateLoading = true;
       state.error = null;
     },
     updateTodoSuccess(state, action: PayloadAction<Todo>) {
-      state.loading = false;
+      state.updateLoading = false;
       const index = state.todos.findIndex((todo) => todo.id === action.payload.id);
       if (index !== -1) {
         state.todos[index] = action.payload;
       }
     },
     updateTodoFailure(state, action: PayloadAction<string>) {
-      state.loading = false;
+      state.updateLoading = false;
       state.error = action.payload;
     },
     updateTodoTimeSpent(state, action: PayloadAction<any, any>) {
@@ -64,30 +69,27 @@ const todosSlice = createSlice({
       }
     },
     deleteTodoStart(state) {
-      state.loading = true;
+      state.deleteLoading = true;
       state.error = null;
     },
     deleteTodoSuccess(state, action: PayloadAction<string>) {
-      state.loading = false;
+      state.deleteLoading = false;
       state.todos = state.todos.filter((todo) => todo.id !== action.payload);
     },
     deleteTodoFailure(state, action: PayloadAction<string>) {
-      state.loading = false;
+      state.deleteLoading = false;
       state.error = action.payload;
     },
-    updateTodoList(state, action: PayloadAction<Todo[]>) {
-      state.todos = action.payload;
-    },
-    toggleTodoCompletion(state, action: PayloadAction<string>) {
-      const index = state.todos.findIndex((todo) => todo.id === action.payload);
+    toggleTodoCompletion(state, action: PayloadAction<{ id: string, completedDate: Timestamp | null, completed: boolean }>) {
+      const index = state.todos.findIndex((todo) => todo.id === action.payload.id);
       if (index !== -1) {
         const todo = state.todos[index];
-        const wasCompleted = todo.completed;
         state.todos[index] = {
           ...todo,
-          completed: !wasCompleted,
-          completedDate: wasCompleted ? null : new Date().toISOString()
+          completed: action.payload.completed,
+          completedDate: action.payload.completedDate
         };
+        state.updateLoading = false
       }
     },
   },
@@ -107,7 +109,6 @@ export const {
   deleteTodoStart,
   deleteTodoSuccess,
   deleteTodoFailure,
-  updateTodoList,
   toggleTodoCompletion
 } = todosSlice.actions;
 

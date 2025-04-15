@@ -74,9 +74,6 @@ const TodoSelectionComponent = ({ onSelect }: { onSelect: (todo: Todo) => void }
         closeSheet();
     };
 
-    useEffect(() => {
-        dispatch(fetchTodos())
-    }, [])
 
     return (
         <Box p={4} flex={1}>

@@ -4,13 +4,13 @@ import { Box, Button, Text, VStack, HStack, Pressable, Badge, ScrollView, Keyboa
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Priority, PriorityLabels } from '@/utils/constants';
-import { Todo } from '@/types';
+import { NewTodo } from '@/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { addTodo, updateTodo } from '@/features/todos/todosThunks';
 import { AppDispatch, RootState } from '@/store/store';
 import { Timestamp } from 'firebase/firestore';
-import formatDate from '@/utils/formatDate';
 import moment from 'moment';
+import { setToastMessage } from '@/features/auth/authSlice';
 
 export default function AddTodo() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function AddTodo() {
   const existingTodo = useSelector((state: RootState) =>
     todoId ? state.todos.todos.find((todo) => todo.id === todoId) : null
   );
-  const { loading } = useSelector((state: RootState) => state.todos);
+  const { loading, updateLoading } = useSelector((state: RootState) => state.todos);
 
   const [assignedDate, setAssignedDate] = useState<Date | null>(null);
 
@@ -40,7 +40,6 @@ export default function AddTodo() {
       setTitle(existingTodo.title);
       setDescription(existingTodo.description);
       setPriority(existingTodo.priority);
-  
       const assigned = existingTodo.assignedDate instanceof Timestamp
         ? existingTodo.assignedDate.toDate()
         : new Date(existingTodo.assignedDate);
@@ -54,17 +53,16 @@ export default function AddTodo() {
 
   const handleSaveTodo = async () => {
     if (!title.trim()) {
-      alert('Task name is required');
+      dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Task name is required' }));
       return;
     }
 
     if (!(assignedDate instanceof Date) || isNaN(assignedDate.getTime())) {
-      alert('Invalid assigned date');
+      dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Invalid assigned date' }));
       return;
     }
 
-    const updatedTodo: Todo = {
-      id: todoId || '',
+    const updatedTodo: NewTodo = {
       title,
       description,
       priority,
@@ -88,7 +86,7 @@ export default function AddTodo() {
 
     try {
       if (todoId) {
-        await dispatch(updateTodo(updatedTodo.id, updatedTodo));
+        await dispatch(updateTodo(todoId, updatedTodo));
       } else {
         await dispatch(addTodo(updatedTodo));
       }
@@ -145,10 +143,7 @@ export default function AddTodo() {
                     px={6}
                     py={2}
                     borderRadius="md"
-                    colorScheme={priority === value ? `${getPriorityColorScheme(value)}` : `${getPriorityColorScheme(value)}.300`}
-                    bg={`${getPriorityColorScheme(value)}.${priority === value ? 500 : 50}`}
-                    borderWidth={1}
-                    borderColor={getPriorityColorScheme(value)}
+                    colorScheme={priority === value ? 'purple.600' : 'primary.525'}
                     variant={priority === value ? 'solid' : 'subtle'}
                     _text={{
                       fontSize: 'lg',
@@ -202,7 +197,7 @@ export default function AddTodo() {
               bg: 'primary.500',
               opacity: 0.5
             }}
-            isLoading={loading}
+            isLoading={loading || updateLoading}
           >
             {todoId ? "Save" : 'Create Task'}
           </Button>

@@ -1,4 +1,6 @@
-import { toggleTodoCompletion, updateTodoTimeSpent } from '@/features/todos/todosSlice';
+import { setToastMessage } from '@/features/auth/authSlice';
+import { updateTodoTimeSpent } from '@/features/todos/todosSlice';
+import { toggleTodoCompletionAsync } from '@/features/todos/todosThunks';
 import { AppDispatch } from '@/store/store';
 import { Todo } from '@/types';
 import { Toast } from 'native-base';
@@ -79,11 +81,11 @@ export function usePomodoroTimer({
 
     const handleModeTransition = useCallback((prev: TimerState, isManualAction = false): TimerState => {
         onModeTransition();
-        
+
         if (autoStartTimeoutRef.current) {
             clearTimeout(autoStartTimeoutRef.current);
         }
-    
+
         if (!autoSwitch && !isManualAction) {
             return {
                 ...prev,
@@ -92,9 +94,9 @@ export function usePomodoroTimer({
                 lastUpdate: Date.now()
             };
         }
-    
+
         let nextState: TimerState;
-        
+
         if (prev.mode === "pomodoro") {
             const isLongRest = prev.cycles % cyclesBeforeLongRest === 0;
             nextState = {
@@ -115,11 +117,11 @@ export function usePomodoroTimer({
                 isActive: false
             };
         }
-    
+
         if (autoStart && (autoSwitch || isManualAction)) {
             nextState.isActive = true;
         }
-    
+
         return nextState;
     }, [
         pomodoroTime,
@@ -212,14 +214,14 @@ export function usePomodoroTimer({
             ...prev,
             mode,
             time: getTimeForMode(mode),
-            isActive: autoStart 
+            isActive: autoStart
         }));
     }, [state.isActive, getTimeForMode, autoStart]);
 
     const completeCurrentTodo = useCallback(() => {
         if (!selectedTodoId) return;
 
-        dispatch(toggleTodoCompletion(selectedTodoId));
+        dispatch(toggleTodoCompletionAsync(selectedTodoId));
 
         stopTimer();
         setState({
@@ -231,11 +233,7 @@ export function usePomodoroTimer({
         });
         accumulatedTimeRef.current = 0;
 
-        Toast.show({
-            title: "Task Completed!",
-            description: "Great work! 🎉",
-            duration: 3000
-        });
+        dispatch(setToastMessage({ title: 'Task Completed!', status: 'success', description: "Great work! 🎉", }));
 
         setSelectedTodoId(null);
     }, [selectedTodoId, stopTimer, pomodoroTime, dispatch]);

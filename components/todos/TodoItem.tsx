@@ -7,27 +7,27 @@ import { MaterialIcons } from '@expo/vector-icons';
 import moment from 'moment';
 import { useRouter } from 'expo-router';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { Pressable } from 'react-native';
+import { ActivityIndicator, Pressable } from 'react-native';
 import colors from '@/styles/colors';
 import { Todo } from '@/types';
 import formatDate from '@/utils/formatDate';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 interface TodoItemProps {
     item: Todo;
     viewMode: 'list' | 'tabbed';
     onDelete: () => void;
     onToggleComplete: () => void;
+    loading: boolean
 }
 
 
-const TodoItem = gestureHandlerRootHOC(({ item, viewMode, onDelete, onToggleComplete }: TodoItemProps) => {
+const TodoItem = gestureHandlerRootHOC(({ item, viewMode, onDelete, onToggleComplete, loading }: TodoItemProps) => {
     const router = useRouter();
     const theme = useTheme();
     const { title, createdAt, completed, completedDate, priority, description } = item;
-
     const priorityColors = ["green.400", "yellow.400", "red.400"];
-
-
     const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
     const height = useSharedValue(measuredHeight || 153);
     const opacity = useSharedValue(1);
@@ -106,8 +106,19 @@ const TodoItem = gestureHandlerRootHOC(({ item, viewMode, onDelete, onToggleComp
                         <HStack justifyContent="space-between" alignItems="center" mt={1}>
                             <Text fontSize="xs" color="gray.500">{completed ? `Completed: ${formatDate(completedDate)}` : `Added: ${formatDate(createdAt)}`}</Text>
                             <IconButton
-                                icon={<MaterialIcons name={completed ? "check-circle" : "radio-button-unchecked"} size={24} color={theme.colors.purple[500]} />}
+                                icon={
+                                    loading ? (
+                                        <ActivityIndicator size="small" style={{ height: 24 }} color={colors.primary[500]} />
+                                    ) : (
+                                        <MaterialIcons
+                                            name={completed ? "check-circle" : "radio-button-unchecked"}
+                                            size={24}
+                                            color={theme.colors.purple[500]}
+                                        />
+                                    )
+                                }
                                 onPress={onToggleComplete}
+                                isDisabled={loading}
                             />
                         </HStack>
                     </Box>

@@ -13,3 +13,5 @@ export type Todo = {
   assignedDate: Timestamp;
   completedDate: Timestamp | null;
 };
+
+export type NewTodo = Omit<Todo, 'id'>;

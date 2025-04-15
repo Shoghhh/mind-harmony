@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Box,
   Text,
@@ -22,13 +22,14 @@ import { RootState } from '@/store/store';
 import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
 import { useTimerFeedback } from '@/hooks/useTimerFeedback';
-import { Alert } from 'react-native';
+import ConfirmationDialog from '../MyDialog';
 
 type TimerMode = "pomodoro" | "shortRest" | "longRest";
 
 const PomodoroTimer = () => {
   const { colors } = useTheme();
   const { present } = useBottomSheet();
+  const [isCompleteOpen, setIsCompleteOpen] = useState(false);
 
   const {
     pomodoroTime,
@@ -112,7 +113,7 @@ const PomodoroTimer = () => {
             ))}
           </HStack>
 
-          <Box bg={cardBg} p={2} rounded="full"  width={'100%'}>
+          <Box bg={cardBg} p={2} rounded="full" width={'100%'}>
             <ProgressIndicator
               currentTime={state.time}
               totalTime={state.mode === 'pomodoro' ? pomodoroTime :
@@ -144,24 +145,13 @@ const PomodoroTimer = () => {
                   <Pressable
                     onPress={(e) => {
                       e.stopPropagation();
-                      Alert.alert(
-                        "Complete Task",
-                        "Mark this as completed and reset timer?",
-                        [
-                          { text: "Cancel", style: "cancel" },
-                          {
-                            text: "Complete",
-                            onPress: completeCurrentTodo,
-                            style: "default"
-                          }
-                        ]
-                      );
+                      setIsCompleteOpen(true);
                     }}
                     p={2}
                     px={3}
                     rounded="md"
-                    bg="emerald.500"
-                    _pressed={{ bg: "emerald.600", opacity: 0.9 }}
+                    bg="primary.600"
+                    _pressed={{ bg: "primary.600", opacity: 0.8 }}
                     flexDirection="row"
                     alignItems="center"
                   >
@@ -177,7 +167,12 @@ const PomodoroTimer = () => {
                     </Text>
                   </Pressable>
                 </HStack>
-
+                <ConfirmationDialog
+                  isOpen={isCompleteOpen}
+                  onClose={() => setIsCompleteOpen(false)}
+                  onConfirm={completeCurrentTodo}
+                  type="complete"
+                />
                 {todo.description && (
                   <Text fontSize="sm" color={secondaryText} numberOfLines={1}>
                     {todo.description}

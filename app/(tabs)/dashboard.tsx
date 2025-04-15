@@ -12,11 +12,7 @@ import formatDate from '@/utils/formatDate';
 const DashboardScreen = () => {
   const userName = "User";
   const { todos } = useSelector((state: RootState) => state.todos)
-  const dispatch = useDispatch<AppDispatch>()
 
-  useEffect(() => {
-    dispatch(fetchTodos())
-  }, [])
 
 
   // Stats calculations

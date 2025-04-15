@@ -1,5 +1,5 @@
 import { Todo } from "@/types";
-import { doc, updateDoc, deleteDoc, collection, getDocs, addDoc, setDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, collection, getDocs, addDoc } from 'firebase/firestore';
 import { db } from "@/firebase/firebase";
 import { getAuth } from 'firebase/auth';
 

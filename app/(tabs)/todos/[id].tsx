@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import moment from 'moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import { deleteTodo } from '@/features/todos/todosThunks';
-import { toggleTodoCompletion } from '@/features/todos/todosSlice';
+import { deleteTodo, toggleTodoCompletionAsync } from '@/features/todos/todosThunks';
 import { Priority, PriorityLabels } from '@/utils/constants';
 import { Box, Button, Text, VStack, HStack, Badge, ScrollView, Divider, Icon } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import colors from '@/styles/colors';
 import formatDate from '@/utils/formatDate';
+import ConfirmationDialog from '@/components/MyDialog';
 
 export default function TodoDetail() {
     const router = useRouter();
@@ -21,47 +20,22 @@ export default function TodoDetail() {
     const todo = useSelector((state: RootState) =>
         state.todos.todos.find((item) => item.id === todoId)
     );
+    const { updateLoading, deleteLoading } = useSelector((state: RootState) =>
+        state.todos
+    );
 
-    if (!todoId || typeof todoId !== 'string') {
-        return (
-            <Box flex={1} justifyContent="center" alignItems="center">
-                <Text fontSize="xl" color="neutral.grayDark" fontWeight="medium">
-                    Invalid Todo ID
-                </Text>
-            </Box>
-        );
-    }
 
-    if (!todo) {
-        return (
-            <Box flex={1} justifyContent="center" alignItems="center">
-                <Text fontSize="xl" color="neutral.grayDark" fontWeight="medium">
-                    Todo not found
-                </Text>
-            </Box>
-        );
-    }
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
     const handleDelete = () => {
         dispatch(deleteTodo(todoId));
         router.push('/(tabs)/todos');
     };
 
     const handleToggleComplete = () => {
-        dispatch(toggleTodoCompletion(todoId));
+        dispatch(toggleTodoCompletionAsync(todoId));
     };
 
-    const getPriorityColorScheme = () => {
-        switch (todo.priority) {
-            case Priority.High:
-                return 'red';
-            case Priority.Medium:
-                return 'orange';
-            case Priority.Low:
-                return 'green';
-            default:
-                return 'gray';
-        }
-    };
 
     const formatTimeSpent = (seconds: number) => {
         const hours = Math.floor(seconds / 3600);
@@ -76,6 +50,43 @@ export default function TodoDetail() {
         }
         return formatted.trim();
     };
+
+    const getPriorityColorScheme = () => {
+        switch (todo?.priority) {
+            case Priority.High:
+                return 'red';
+            case Priority.Medium:
+                return 'orange';
+            case Priority.Low:
+                return 'green';
+            default:
+                return 'gray';
+        }
+    };
+
+
+    if (!todoId || typeof todoId !== 'string') {
+        return (
+            <Box flex={1} justifyContent="center" alignItems="center">
+                <Text fontSize="xl" color="neutral.grayDark" fontWeight="medium">
+                    Invalid Todo ID
+                </Text>
+            </Box>
+        );
+    }
+
+
+    if (!todo) {
+        return (
+            <Box flex={1} justifyContent="center" alignItems="center">
+                <Text fontSize="xl" color="neutral.grayDark" fontWeight="medium">
+                    Todo not found
+                </Text>
+            </Box>
+        );
+    }
+
+
 
     return (
         <ScrollView flex={1} p={6} marginBottom={3}>
@@ -118,7 +129,7 @@ export default function TodoDetail() {
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
-                            {moment(todo.assignedDate.toDate()).format('DD MMMM YYYY')}
+                            {formatDate(todo.assignedDate)}
                         </Text>
                     </Box>
 
@@ -192,6 +203,7 @@ export default function TodoDetail() {
                         size="lg"
                         borderRadius="lg"
                         py={3}
+                        isLoading={updateLoading}
                         leftIcon={
                             <Icon
                                 as={MaterialIcons}
@@ -213,17 +225,25 @@ export default function TodoDetail() {
                         size="lg"
                         borderRadius="lg"
                         py={3}
+                        isLoading={deleteLoading}
                         leftIcon={<Icon as={MaterialIcons} name="delete" size="sm" />}
                         colorScheme="red"
                         variant="outline"
                         borderWidth={2}
                         _text={{ fontSize: 'md', fontWeight: 'bold' }}
                         borderColor={'red.400'}
-                        onPress={handleDelete}
+                        onPress={() => setIsDeleteOpen(true)}
                     >
                         Delete Todo
                     </Button>
                 </VStack>
+                <ConfirmationDialog
+                    isOpen={isDeleteOpen}
+                    onClose={() => setIsDeleteOpen(false)}
+                    onConfirm={() => handleDelete()}
+                    type="delete"
+                />
+
             </VStack>
         </ScrollView>
     );

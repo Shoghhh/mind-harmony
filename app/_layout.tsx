@@ -1,5 +1,5 @@
 import '../global.css';
-import store, { RootState } from "@/store/store";
+import store, { AppDispatch, RootState } from "@/store/store";
 import { Slot } from "expo-router";
 import { StatusBar, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -14,16 +14,21 @@ import { ActivityIndicator } from 'react-native';
 import { ToastProvider } from '@/providers/ToastProvider';
 import { useSelector } from 'react-redux';
 import colors from '@/styles/colors';
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { fetchTodos } from '@/features/todos/todosThunks';
 
-//reset defaults in the bottomsheet pomodoro settings
-// add page priority colors
-// completed update doesnt update in the firestore
-// move sign out to service
-//call fetch todos somewhere at the beginning
-// implement profile, dashboard
-// translation arm eng
+// completed update doesnt update in the firestore +
+// call fetch todos somewhere at the beginning +
+// todo id while saving +
+// add page priority colors +
+// toasts +
+// implement dashboard
 // user image, name register
-// todo id while saving
+// implement profile
+// translation arm eng
+// reset defaults in the bottomsheet pomodoro settings
+// move sign out to service
 
 export default function RootLayout() {
     return (
@@ -52,7 +57,14 @@ export default function RootLayout() {
 }
 
 function ReduxAuthLayout() {
-    const { initialized } = useSelector((state: RootState) => state.auth);
+    const { initialized, user } = useSelector((state: RootState) => state.auth);
+    const dispatch = useDispatch<AppDispatch>();
+
+    useEffect(() => {
+        if (initialized && user) {
+            dispatch(fetchTodos());
+        }
+    }, [initialized, user, dispatch]);
 
     if (!initialized) {
         return (

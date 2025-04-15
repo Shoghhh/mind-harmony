@@ -13,9 +13,10 @@ import {
   deleteTodoFailure,
   toggleTodoCompletion,
 } from './todosSlice';
-import { Todo } from '../../types';
+import { NewTodo, Todo } from '../../types';
 import { AppThunk } from '@/store/store';
 import { addTodoToFirestore, updateTodoInFirestore, deleteTodoFromFirestore, fetchTodosFromFirestore } from '@/firebase/todoService';
+import { Timestamp } from 'firebase/firestore';
 
 export const fetchTodos = (): AppThunk => async (dispatch, getState) => {
 
@@ -33,7 +34,7 @@ export const fetchTodos = (): AppThunk => async (dispatch, getState) => {
 };
 
 // Add a Todo
-export const addTodo = (todo: Todo): AppThunk => async (dispatch) => {
+export const addTodo = (todo: NewTodo): AppThunk => async (dispatch) => {
   dispatch(addTodoStart());
   try {
     const newTodo = await addTodoToFirestore(todo);
@@ -48,7 +49,7 @@ export const addTodo = (todo: Todo): AppThunk => async (dispatch) => {
 };
 
 // Update a Todo
-export const updateTodo = (id: string, updatedTodo: Todo): AppThunk => async (dispatch) => {
+export const updateTodo = (id: string, updatedTodo: NewTodo): AppThunk => async (dispatch) => {
   dispatch(updateTodoStart());
   try {
     const updated = await updateTodoInFirestore(id, updatedTodo);
@@ -83,14 +84,15 @@ export const toggleTodoCompletionAsync = (id: string): AppThunk => async (dispat
     console.error("Todo not found.");
     return;
   }
-  const newCompletionStatus = !currentTodo.completed;  // Toggle the completion state
+  const completionStatus = !currentTodo.completed;
+  const completedDate = !completionStatus ? null : Timestamp.now()
 
+  dispatch(updateTodoStart())
   try {
-    dispatch(toggleTodoCompletion(id));
-    const updatedTodo = await updateTodoInFirestore(id, { completed: newCompletionStatus });
-    dispatch(updateTodoSuccess(updatedTodo));
+    const updatedTodo = await updateTodoInFirestore(id, { completed: completionStatus, completedDate });
+    dispatch(toggleTodoCompletion({ id: updatedTodo.id, completedDate: updatedTodo.completedDate, completed: updatedTodo.completed }));
   } catch (error) {
-    dispatch(toggleTodoCompletion(id));
+    dispatch(toggleTodoCompletion({ id, completedDate, completed: false }));
     console.error("Error toggling todo completion:", error);
   }
 };

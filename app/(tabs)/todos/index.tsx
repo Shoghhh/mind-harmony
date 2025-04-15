@@ -1,8 +1,7 @@
 import Icon from '@/assets/icons';
 import AnimatedProgress from '@/components/todos/AnimatedProgress';
 import TodoItem from '@/components/todos/TodoItem';
-import { toggleTodoCompletion } from '@/features/todos/todosSlice';
-import { deleteTodo, fetchTodos } from '@/features/todos/todosThunks';
+import { deleteTodo, fetchTodos, toggleTodoCompletionAsync } from '@/features/todos/todosThunks';
 import { setDateOption } from '@/features/uiSlice';
 import { AppDispatch, RootState } from '@/store/store';
 import colors from '@/styles/colors';
@@ -26,15 +25,14 @@ export default function TodoList() {
     const initialDate = Array.isArray(date) ? date[0] : date;
     const parsedDate = initialDate ? new Date(initialDate) : new Date()
 
-    const todos = useSelector((state: RootState) => state.todos.todos);
-    const loading = useSelector((state: RootState) => state.todos.loading);
-    const error = useSelector((state: RootState) => state.todos.error);
+    const { todos, loading } = useSelector((state: RootState) => state.todos);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [selectedTab, setSelectedTab] = useState<'incomplete' | 'completed'>('incomplete');
     const [completionProgress, setCompletionProgress] = useState<number>(0);
     const [currentDate, setCurrentDate] = useState(parsedDate);
     const [sortOption, setSortOption] = useState<Sort>(Sort.CreatedDate);
     const dateOption = useSelector((state: RootState) => state.ui.dateOption);
+    const [currentlyUpdatingId, setCurrentlyUpdatingId] = useState<string | null>(null);
 
     const handleDateOptionChange = (value: number) => {
         dispatch(setDateOption(value));
@@ -97,8 +95,12 @@ export default function TodoList() {
     };
 
     const handleToggleComplete = (todoId: string) => {
-        dispatch(toggleTodoCompletion(todoId));
+        setCurrentlyUpdatingId(todoId);
+        dispatch(toggleTodoCompletionAsync(todoId))
+            .finally(() => setCurrentlyUpdatingId(null));
     };
+
+  
 
     const toggleViewMode = () => {
         setViewMode(viewMode === 'list' ? 'tabbed' : 'list');
@@ -255,10 +257,6 @@ export default function TodoList() {
     }, [todos, currentDate, dateOption]);
 
     useEffect(() => {
-        dispatch(fetchTodos());
-    }, [dispatch]);
-
-    useEffect(() => {
         const validOptions = sortOptions.map(o => o.value);
         if (!validOptions.includes(sortOption)) {
             setSortOption(validOptions[0] || Sort.CreatedDate);
@@ -402,7 +400,7 @@ export default function TodoList() {
                         </Text>
                     )}
                     {item.data.map((task: Todo) => (
-                        <TodoItem key={task.id} viewMode={viewMode} item={task} onDelete={() => handleDelete(task.id)} onToggleComplete={() => handleToggleComplete(task.id)} />
+                        <TodoItem key={task.id} loading={currentlyUpdatingId === task.id} viewMode={viewMode} item={task} onDelete={() => handleDelete(task.id)} onToggleComplete={() => handleToggleComplete(task.id)} />
                     ))}
                 </View>
             )}
