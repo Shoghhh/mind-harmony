@@ -3,20 +3,18 @@ import { auth } from '@/firebase/firebase';
 import { useRouter } from 'expo-router';
 import { View, StyleSheet, Button, Text } from "react-native";
 import { useDispatch } from 'react-redux';
-import { signOutUser } from '@/features/auth/authSlice';
+import { signOutUser } from '@/features/auth/authThunk';
+import { AppDispatch } from '@/store/store';
 
 export default function Profile() {
   const router = useRouter()
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
 
   const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      dispatch(signOutUser());
-      router.replace('/auth');
-    } catch (error) {
-    }
+    dispatch(signOutUser())
+    router.replace('/auth');
   };
+
   return (
     <View style={styles.container}>
       <Text>Profile Screen</Text>

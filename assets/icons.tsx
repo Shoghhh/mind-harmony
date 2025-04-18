@@ -12,7 +12,6 @@ type IconProps = {
 const staticIconSettings = {
   dashboard: { library: "MaterialIcons", name: "dashboard", size: 26 },
   todos: { library: "FontAwesome5", name: "tasks", size: 24 },
-  habits: { library: "Ionicons", name: "checkmark-done", size: 26 },
   pomodoro: { library: "Ionicons", name: "timer-outline", size: 24 },
   profile: { library: "AntDesign", name: "user", size: 26 },
 } as const;

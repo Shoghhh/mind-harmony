@@ -23,12 +23,12 @@ import { fetchTodos } from '@/features/todos/todosThunks';
 // todo id while saving +
 // add page priority colors +
 // toasts +
-// implement dashboard
-// user image, name register
+// implement dashboard +
+// user image, name register +
 // implement profile
 // translation arm eng
 // reset defaults in the bottomsheet pomodoro settings
-// move sign out to service
+// move sign out to service +
 
 export default function RootLayout() {
     return (
