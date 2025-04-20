@@ -95,16 +95,16 @@ const DashboardScreen = () => {
 
   const getPriorityColor = (priority: number) => {
     switch (priority) {
-      case 1: return 'rose.200';
-      case 2: return 'amber.200';
+      case 2: return 'rose.200';
+      case 1: return 'amber.200';
       default: return 'emerald.200';
     }
   };
 
   const getPriorityText = (priority: number) => {
     switch (priority) {
-      case 1: return 'High';
-      case 2: return 'Medium';
+      case 2: return 'High';
+      case 1: return 'Medium';
       default: return 'Low';
     }
   };
@@ -387,9 +387,9 @@ const DashboardScreen = () => {
                     alignItems="center"
                   >
                     <Feather
-                      name={todo.priority === 1 ? 'alert-triangle' : 'info'}
+                      name={todo.priority === 2 ? 'alert-triangle' : 'info'}
                       size={12}
-                      color={todo.priority === 1 ? '#ef4444' : todo.priority === 2 ? '#f59e0b' : '#10b981'}
+                      color={todo.priority === 2 ? '#ef4444' : todo.priority === 1 ? '#f59e0b' : '#10b981'}
                       style={{ marginRight: 4 }}
                     />
                     <Text fontSize="xs" fontWeight="600">

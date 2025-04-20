@@ -14,6 +14,7 @@ interface AuthState {
     googleLoading: boolean;
     toastMessage: ToastMessage | null;
     authAction: 'login' | 'signup' | 'resetpass';
+    photoUri: null | string
 }
 
 const initialState: AuthState = {
@@ -22,7 +23,8 @@ const initialState: AuthState = {
     loading: false,
     googleLoading: false,
     toastMessage: null,
-    authAction: 'signup'
+    authAction: 'signup',
+    photoUri: null
 };
 
 export const authSlice = createSlice({
@@ -56,9 +58,27 @@ export const authSlice = createSlice({
         },
         setAuthAction: (state, action) => {
             state.authAction = action.payload
-        }
+        },
+        updateProfileSuccess: (state, action: PayloadAction<{
+            displayName?: string | null;
+            photoURL?: string | null;
+        }>) => {
+            if (!state.user) return;
+            const newUser = JSON.parse(JSON.stringify(state.user));
+            if (action.payload.displayName !== undefined) {
+                newUser.displayName = action.payload.displayName;
+            }
+            if (action.payload.photoURL !== undefined) {
+                newUser.photoURL = action.payload.photoURL;
+            }
+            state.user = newUser;
+        },
+        setPhotoUri: (state, action) => {
+            state.photoUri = action.payload;
+        },
     },
+
 });
 
-export const { setUser, setLoading, setGoogleLoading, setToastMessage, clearToastMessage, signOutUser, setAuthState, setAuthAction } = authSlice.actions;
+export const { setUser, setLoading, setGoogleLoading, setToastMessage, clearToastMessage, signOutUser, setAuthState, setAuthAction, updateProfileSuccess, setPhotoUri } = authSlice.actions;
 export default authSlice.reducer;

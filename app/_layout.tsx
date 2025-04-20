@@ -25,10 +25,14 @@ import { fetchTodos } from '@/features/todos/todosThunks';
 // toasts +
 // implement dashboard +
 // user image, name register +
-// implement profile
+// implement profile +
 // translation arm eng
 // reset defaults in the bottomsheet pomodoro settings
 // move sign out to service +
+// check image null +
+// wrap withAuthCheck all calls and handle
+// logout +
+// google sign in  +
 
 export default function RootLayout() {
     return (

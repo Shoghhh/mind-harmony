@@ -24,7 +24,7 @@ export default function TabLayout() {
         <Tabs.Screen name="dashboard" options={{ headerShown: false }} />
         <Tabs.Screen name="todos" options={{ headerShown: false }} />
         <Tabs.Screen name="pomodoro" options={{ headerShown: false }} />
-        <Tabs.Screen name="profile" options={{ header: () => <Header title={'Profile'} /> }} />
+        <Tabs.Screen name="profile" options={{ headerShown: false }} />
       </Tabs>
     </Background>
   );

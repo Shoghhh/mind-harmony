@@ -1,34 +1,61 @@
 import React, { useEffect, useState } from 'react';
-import { Image, View, ActivityIndicator } from 'react-native';
+import { Image, View, ActivityIndicator, ImageSourcePropType } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { fetchUserProfileImage } from '@/features/auth/authThunk';
+import colors from '@/styles/colors';
 
-const ProfileImage = () => {
+interface ProfileImageProps {
+    size?: number;
+    source?: ImageSourcePropType;
+    userId?: string;
+}
+
+const ProfileImage = ({ size = 50, source, userId }: ProfileImageProps) => {
     const [imageBase64, setImageBase64] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const { user } = useSelector((state: RootState) => state.auth); // assuming you have user in redux
+    const { user, photoUri } = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
         const loadImage = async () => {
-            if (user?.uid) {
-                const base64 = await fetchUserProfileImage(user.uid);
-                setImageBase64(base64);
+            if (!source && (userId || user?.uid)) {
+                try {
+                    const idToUse = userId || user?.uid;
+                    if (idToUse) {
+                        const base64 = await fetchUserProfileImage(idToUse);
+                        setImageBase64(base64);
+                    }
+                } catch (error) {
+                    console.error('Error loading profile image:', error);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
                 setLoading(false);
             }
         };
 
         loadImage();
-    }, [user]);
+    }, [user, userId, source]);
 
-    if (loading) return <ActivityIndicator style={{height: 50, width: 50}} />;
+    if (loading) {
+        return <ActivityIndicator color={colors.primary[600]} style={{ height: size, width: size }} />;
+    }
 
-    if (!imageBase64) return <View />;
-
+    const imageSource = source
+        ? source
+        : imageBase64
+                ? { uri: `data:image/jpeg;base64,${imageBase64}` }
+                : require('@/assets/images/default-profile.png');
     return (
         <Image
-            source={{ uri: `data:image/jpeg;base64,${imageBase64}` }}
-            style={{ width: 50, height: 50, borderRadius: 60 }}
+            source={imageSource}
+            style={{
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+                resizeMode: 'cover'
+            }}
         />
     );
 };

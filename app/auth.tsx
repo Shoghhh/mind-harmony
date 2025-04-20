@@ -66,7 +66,6 @@ export default function AuthScreen() {
                     dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Please enter all required fields' }));
                     return;
                 }
-                console.log(image, 12345)
                 await dispatch(signUpWithEmail(email, password, name, image));
             } else {
                 if (!email || !password) {
@@ -106,7 +105,6 @@ export default function AuthScreen() {
             Alert.alert('Error', 'Failed to pick image. Please try again.');
         }
     };
-
 
     const handleGoogleSignIn = async () => {
         try {
