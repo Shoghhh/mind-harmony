@@ -48,14 +48,14 @@ const createUserInFirestoreIfNotExists = async (user: any, name?: string,) => {
     if (!docSnap.exists()) {
         await setDoc(userRef, {
             email: user.email,
-            name: name || user.displayName || '',
+            name: user.name,
             createdAt: new Date(),
             lastLogin: new Date(),
         });
     } else {
         await setDoc(userRef, {
             lastLogin: new Date(),
-            ...(name && { name }),
+            ...(name && { displayName: name }),
         }, { merge: true });
     }
 };
@@ -133,6 +133,9 @@ export const signUpWithEmail = (email: string, password: string, name: string, i
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        await updateProfile(user, {
+            displayName: name
+        });
         let base64 = null;
         if (imageUri) {
             base64 = await getBase64FromUri(imageUri);
@@ -140,9 +143,10 @@ export const signUpWithEmail = (email: string, password: string, name: string, i
         }
 
 
-        await createUserInFirestoreIfNotExists(user, name);
+        await createUserInFirestoreIfNotExists({ ...user, name });
 
         await sendEmailVerification(user);
+        console.log(name, 'name')
         dispatch(setUser({
             ...user,
             displayName: name,
@@ -170,7 +174,7 @@ export const loginWithEmail = (email: string, password: string): AppThunk => asy
     try {
         dispatch(setLoading(true));
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-console.log('serCredential.user.emailVerified', userCredential.user.emailVerified)
+        console.log('serCredential.user.emailVerified', userCredential.user.emailVerified)
         if (!userCredential.user.emailVerified) {
             await sendEmailVerification(userCredential.user);
             dispatch(setUser(userCredential.user));
@@ -181,7 +185,7 @@ console.log('serCredential.user.emailVerified', userCredential.user.emailVerifie
             }));
             return
         }
-        await createUserInFirestoreIfNotExists(userCredential.user);
+        await createUserInFirestoreIfNotExists({ ...userCredential.user, name: userCredential.user.displayName });
         dispatch(setUser(userCredential.user));
     } catch (error: any) {
         const message = showError(error);
@@ -225,10 +229,7 @@ export const loginWithGoogle = (): AppThunk => async dispatch => {
         const userCredential = await signInWithCredential(auth, credential);
         const user = userCredential.user;
 
-        await createUserInFirestoreIfNotExists(
-            user,
-            user.displayName || undefined,
-        );
+        await createUserInFirestoreIfNotExists({ ...user, name: user.displayName });
 
         const fileDocRef = doc(db, 'files', user.uid);
         const fileDoc = await getDoc(fileDocRef);

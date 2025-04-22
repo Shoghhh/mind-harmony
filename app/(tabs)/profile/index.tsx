@@ -15,14 +15,15 @@ import { signOutUserAsync } from '@/features/auth/authThunk';
 import { useRouter } from 'expo-router';
 import ProfileImage from '@/components/MyProfileImage';
 import ConfirmationDialog from '@/components/MyDialog';
+import { useTranslation } from 'react-i18next';
 
 const ProfileScreen = () => {
+    const { t } = useTranslation();
     const dispatch = useDispatch<AppDispatch>();
     const router = useRouter();
     const { user } = useSelector((state: RootState) => state.auth);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
 
     const handleSignOut = async () => {
         await dispatch(signOutUserAsync());
@@ -31,27 +32,27 @@ const ProfileScreen = () => {
 
     const menuItems = [
         {
-            label: 'Edit Profile',
+            label: t('editProfile'),
             icon: 'create-outline',
             onPress: () => router.push('/(tabs)/profile/edit'),
         },
         {
-            label: 'Change Password',
+            label: t('changePassword'),
             icon: 'key-outline',
-            onPress: () => router.push('/(tabs)/profile/change-password'), // You can create this screen
+            onPress: () => router.push('/(tabs)/profile/change-password'),
         },
         {
-            label: 'Delete Account',
+            label: t('deleteAccount'),
             icon: 'trash-outline',
             onPress: () => setShowDeleteDialog(true),
         },
         {
-            label: 'Language',
+            label: t('language'),
             icon: 'language-outline',
-            onPress: () => router.push('/(tabs)/profile/language'), // Add a picker screen
+            onPress: () => router.push('/(tabs)/profile/language'),
         },
         {
-            label: 'Logout',
+            label: t('logout'),
             icon: 'log-out-outline',
             color: 'red.500',
             onPress: () => setShowLogoutDialog(true),
@@ -105,13 +106,12 @@ const ProfileScreen = () => {
                     onClose={() => setShowDeleteDialog(false)}
                     onConfirm={() => {
                         // Handle account deletion logic here
-                        // e.g., dispatch(deleteAccountThunk());
                         console.log("Deleting account...");
                     }}
                     type="custom"
-                    title="Delete Account"
-                    bodyText="Are you sure you want to delete your account? Deleting your account will permanently remove all your data."
-                    confirmText="Delete"
+                    title={t('deleteAccount')}
+                    bodyText={t('deleteAccountConfirmation')}
+                    confirmText={t('delete')}
                     confirmColor="red.600"
                     iconName="trash-2"
                     iconColor="red.600"
@@ -122,11 +122,11 @@ const ProfileScreen = () => {
                     onClose={() => setShowLogoutDialog(false)}
                     onConfirm={handleSignOut}
                     type="custom"
-                    title="Logout "
-                    bodyText="Are you sure you want to logout your account?"
-                    confirmText="Logout"
+                    title={t('logout')}
+                    bodyText={t('logoutConfirmation')}
+                    confirmText={t('logout')}
                     confirmColor="red.600"
-                    iconName="trash-2"
+                    iconName="log-out"
                     iconColor="red.600"
                 />
             </VStack>

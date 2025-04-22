@@ -5,7 +5,7 @@ import { useFonts, Borel_400Regular } from '@expo-google-fonts/borel';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { Platform, TextInput } from "react-native";
+import { useTranslation } from 'react-i18next';
 
 GoogleSignin.configure({
   webClientId: '602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com',
@@ -15,6 +15,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [fontsLoaded] = useFonts({ Borel_400Regular });
   const { user } = useSelector((state: RootState) => state.auth)
+  const { t } = useTranslation();
 
   if (!fontsLoaded) return null;
 
@@ -53,7 +54,7 @@ export default function HomeScreen() {
           mb={10}
           onPress={() => router.push('/auth')}
         >
-          Get Started
+             {t('getStarted')}
         </Button>
       </LinearGradient>
     </Box>

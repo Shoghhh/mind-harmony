@@ -9,8 +9,9 @@ export default function AuthListener() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      dispatch(setAuthState({ 
-        initialized: true 
+      dispatch(setAuthState({
+        initialized: true,
+        user
       }));
     });
     

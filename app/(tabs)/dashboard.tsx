@@ -9,12 +9,13 @@ import formatDate from '@/utils/formatDate';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import ProfileImage from '@/components/MyProfileImage';
+import { useTranslation } from 'react-i18next';
 
 const DashboardScreen = () => {
+  const { t } = useTranslation();
   const router = useRouter()
   const { todos } = useSelector((state: RootState) => state.todos);
   const { user } = useSelector((state: RootState) => state.auth);
-
 
   // Stats calculations
   const today = new Date();
@@ -59,7 +60,7 @@ const DashboardScreen = () => {
   const totalTodos = todos.length || 1;
 
   const priorityData = {
-    labels: ["High", "Medium", "Low"],
+    labels: [t("high"), t("medium"), t("low")],
     data: [
       priorityCounts.high / totalTodos,
       priorityCounts.medium / totalTodos,
@@ -103,11 +104,12 @@ const DashboardScreen = () => {
 
   const getPriorityText = (priority: number) => {
     switch (priority) {
-      case 2: return 'High';
-      case 1: return 'Medium';
-      default: return 'Low';
+      case 2: return t('high');
+      case 1: return t('medium');
+      default: return t('low');
     }
   };
+
   const getLastSevenDaysData = () => {
     const days = [];
     const completionData = [];
@@ -132,6 +134,7 @@ const DashboardScreen = () => {
 
     return { days, completionData, totalData };
   };
+
   const { days, completionData, totalData } = getLastSevenDaysData();
   const lineChartConfig = {
     backgroundColor: "#FFFFFF",
@@ -157,12 +160,11 @@ const DashboardScreen = () => {
 
   return (
     <Box flex={1} mt={10} mb={70}>
-      <ScrollView p="4" contentContainerStyle={{ paddingBottom: 50 }}>
-        {/* Header with Profile Picture */}
+      <ScrollView p="4" contentContainerStyle={{ paddingBottom: 50 }} >
         <HStack justifyContent="space-between" alignItems="center" mb="6">
           <VStack space={1}>
             <Text fontSize="2xl" fontWeight="bold" color="primary.950">
-              Hello, {user?.displayName}!
+              {t('hello')}, {user?.displayName}!
             </Text>
             <Text fontSize="md" color="neutral.grayDark">
               {today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -195,7 +197,7 @@ const DashboardScreen = () => {
                 <Box p="2" bg="primary.100" borderRadius="full">
                   <Feather name="sun" size={16} color="#8C8BC4" />
                 </Box>
-                <Text fontSize="sm" color="neutral.grayDark">Today</Text>
+                <Text fontSize="sm" color="neutral.grayDark">{t('today')}</Text>
               </HStack>
               <Text fontSize="2xl" fontWeight="bold" color="primary.600">
                 {todosToday.length}
@@ -215,7 +217,7 @@ const DashboardScreen = () => {
                 <Box p="2" bg="primary.100" borderRadius="full">
                   <Feather name="calendar" size={16} color="#8C8BC4" />
                 </Box>
-                <Text fontSize="sm" color="neutral.grayDark">Last 7 Days</Text>
+                <Text fontSize="sm" color="neutral.grayDark">{t('last7Days')}</Text>
               </HStack>
               <Text fontSize="2xl" fontWeight="bold" color="primary.600">
                 {todosLastSevenDays.length}
@@ -238,7 +240,7 @@ const DashboardScreen = () => {
                 <Box p="2" bg="primary.100" borderRadius="full">
                   <Feather name="check-circle" size={16} color="#8C8BC4" />
                 </Box>
-                <Text fontSize="sm" color="neutral.grayDark">Completed</Text>
+                <Text fontSize="sm" color="neutral.grayDark">{t('completed')}</Text>
               </HStack>
               <Text fontSize="2xl" fontWeight="bold" color="primary.600">
                 {completedTodos}
@@ -258,7 +260,7 @@ const DashboardScreen = () => {
                 <Box p="2" bg="primary.100" borderRadius="full">
                   <Feather name="alert-triangle" size={16} color="#8C8BC4" />
                 </Box>
-                <Text fontSize="sm" color="neutral.grayDark">High Priority</Text>
+                <Text fontSize="sm" color="neutral.grayDark">{t('highPriority')}</Text>
               </HStack>
               <Text fontSize="2xl" fontWeight="bold" color="primary.600">
                 {highPriorityTodos}
@@ -267,16 +269,16 @@ const DashboardScreen = () => {
           </HStack>
         </VStack>
 
-        <VStack space={2} mb="6">
+        {todos.length > 0 && <VStack space={2} mb="6">
           <HStack justifyContent="space-between" alignItems="center">
             <Text fontSize="xl" fontWeight="bold" color="primary.950">
-              Weekly Progress
+              {t('weeklyProgress')}
             </Text>
             <Pressable
               onPress={() => console.log('View detailed weekly report')}
               _pressed={{ opacity: 0.5 }}
             >
-              <Text color="primary.600" fontSize="sm">Details</Text>
+              <Text color="primary.600" fontSize="sm">{t('details')}</Text>
             </Pressable>
           </HStack>
 
@@ -287,16 +289,16 @@ const DashboardScreen = () => {
                 datasets: [
                   {
                     data: completionData,
-                    color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`, // Green for completed
+                    color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
                     strokeWidth: 2
                   },
                   {
                     data: totalData,
-                    color: (opacity = 1) => `rgba(140, 139, 196, ${opacity})`, // Purple for total
+                    color: (opacity = 1) => `rgba(140, 139, 196, ${opacity})`,
                     strokeWidth: 2
                   }
                 ],
-                legend: ["Completed", "Total Tasks"]
+                // legend: [t("completed"), t("totalTasks")]
               }}
               width={Dimensions.get("window").width - 60}
               height={220}
@@ -312,23 +314,22 @@ const DashboardScreen = () => {
             <HStack justifyContent="center" space={4} mt={2}>
               <HStack alignItems="center">
                 <Box w="3" h="3" borderRadius="full" bg="emerald.400" mr={1} />
-                <Text fontSize="xs" color="neutral.grayDark">Completed</Text>
+                <Text fontSize="xs" color="neutral.grayDark">{t('completed')}</Text>
               </HStack>
               <HStack alignItems="center">
                 <Box w="3" h="3" borderRadius="full" bg="primary.600" mr={1} />
-                <Text fontSize="xs" color="neutral.grayDark">Total Tasks</Text>
+                <Text fontSize="xs" color="neutral.grayDark">{t('totalTasks')}</Text>
               </HStack>
             </HStack>
           </Box>
-        </VStack>
+        </VStack>}
 
         {/* Priority Distribution with Interactive Legend */}
         <VStack space={2} mb="6">
           <HStack justifyContent="space-between" alignItems="center">
             <Text fontSize="xl" fontWeight="bold" color="primary.950">
-              Priority Distribution
+              {t('priorityDistribution')}
             </Text>
-
           </HStack>
 
           <Box bg="white" borderRadius="xl" py={4} shadow={1}>
@@ -337,7 +338,6 @@ const DashboardScreen = () => {
               width={Dimensions.get("window").width - 50}
               height={170}
               strokeWidth={13}
-              // style={{backgroundColor: 'red', borderWidth: 1}}
               radius={32}
               chartConfig={chartConfig}
               hideLegend={false}
@@ -349,7 +349,7 @@ const DashboardScreen = () => {
         <VStack space={2} mb="6">
           <HStack justifyContent="space-between" alignItems="center">
             <Text fontSize="xl" fontWeight="bold" color="primary.950">
-              Today's Tasks
+              {t('todaysTasks')}
             </Text>
             <Pressable
               onPress={() => router.push("/(tabs)/todos/add")}
@@ -358,7 +358,7 @@ const DashboardScreen = () => {
               alignItems="center"
             >
               <MaterialIcons name="add-circle" size={20} color="#8C8BC4" />
-              <Text color="primary.600" fontSize="sm" ml={1}>New</Text>
+              <Text color="primary.600" fontSize="sm" ml={1}>{t('new')}</Text>
             </Pressable>
           </HStack>
 
@@ -418,7 +418,7 @@ const DashboardScreen = () => {
               _pressed={{ opacity: 0.8 }}
             >
               <Feather name="plus-circle" size={24} color="#8C8BC4" />
-              <Text color="primary.600" mt={2}>Add your first task</Text>
+              <Text color="primary.600" mt={2}>{t('addFirstTask')}</Text>
             </Pressable>
           )}
         </VStack>
@@ -427,13 +427,13 @@ const DashboardScreen = () => {
         <VStack space={2}>
           <HStack justifyContent="space-between" alignItems="center">
             <Text fontSize="xl" fontWeight="bold" color="primary.950">
-              Upcoming Tasks
+              {t('upcomingTasks')}
             </Text>
             <Pressable
               onPress={() => router.push('/(tabs)/todos')}
               _pressed={{ opacity: 0.5 }}
             >
-              <Text color="primary.600" fontSize="sm">View All</Text>
+              <Text color="primary.600" fontSize="sm">{t('viewAll')}</Text>
             </Pressable>
           </HStack>
 
@@ -478,7 +478,7 @@ const DashboardScreen = () => {
                 <HStack alignItems="center" space={1}>
                   <Feather name="calendar" size={12} color="#8C8BC4" />
                   <Text fontSize="xs" color="primary.600">
-                    Due {formatDate(todo.assignedDate)}
+                    {t('due')} {formatDate(todo.assignedDate)}
                   </Text>
                 </HStack>
               </Pressable>
@@ -486,7 +486,7 @@ const DashboardScreen = () => {
           ) : (
             <Box bg="neutral.white" p="4" borderRadius="xl" alignItems="center">
               <Feather name="check" size={24} color="#8C8BC4" />
-              <Text color="primary.600" mt={2}>No upcoming tasks</Text>
+              <Text color="primary.600" mt={2}>{t('noUpcomingTasks')}</Text>
             </Box>
           )}
         </VStack>

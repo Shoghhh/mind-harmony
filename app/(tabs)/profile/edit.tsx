@@ -21,8 +21,10 @@ import { useDispatch } from 'react-redux';
 import { updateUserProfile } from '@/features/auth/authThunk';
 import { setToastMessage } from '@/features/auth/authSlice';
 import * as ImagePicker from 'expo-image-picker';
+import { useTranslation } from 'react-i18next';
 
 const EditProfileScreen = () => {
+    const { t } = useTranslation();
     const { user, loading } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch<AppDispatch>();
     const router = useRouter()
@@ -33,7 +35,7 @@ const EditProfileScreen = () => {
         try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert('Permission required', 'We need access to your photos to set a profile picture');
+                Alert.alert(t('permissionRequired'), t('photoAccessRequired'));
                 return;
             }
             const result = await ImagePicker.launchImageLibraryAsync({
@@ -51,16 +53,16 @@ const EditProfileScreen = () => {
             setImageUri(selectedImage);
         } catch (error) {
             console.error('Error:', error);
-            Alert.alert('Error', 'Failed to pick image. Please try again.');
+            Alert.alert(t('error'), t('imagePickError'));
         }
     };
 
     const handleSave = async () => {
         if (!name.trim()) {
             dispatch(setToastMessage({
-                title: 'Invalid Name',
+                title: t('error'),
                 status: 'error',
-                description: 'Name cannot be empty'
+                description: t('nameRequired')
             }));
             return;
         }
@@ -72,11 +74,11 @@ const EditProfileScreen = () => {
         if (imageUri) {
             updates.photoURL = imageUri;
         }
-        console.log(updates)
 
         try {
             await dispatch(updateUserProfile(updates, router)).unwrap()
         } catch (error) {
+            // Error handling is done in the thunk
         }
     };
 
@@ -105,10 +107,10 @@ const EditProfileScreen = () => {
 
             <VStack space={4} mt={10} px={4}>
                 <FormControl>
-                    <FormControl.Label>Name</FormControl.Label>
+                    <FormControl.Label>{t('name')}</FormControl.Label>
                     <TextInput
                         className="h-[50px] rounded-lg bg-white px-4 text-base"
-                        placeholder="Enter your name"
+                        placeholder={t('enterYourName')}
                         value={name}
                         onChangeText={setName}
                     />
@@ -125,11 +127,11 @@ const EditProfileScreen = () => {
                     shadow={3}
                     isLoading={loading}
                 >
-                    Save Changes
+                    {t('saveChanges')}
                 </Button>
             </VStack>
         </ScrollView>
     );
 };
 
-export default EditProfileScreen
+export default EditProfileScreen;

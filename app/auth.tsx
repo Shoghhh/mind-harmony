@@ -24,12 +24,14 @@ import { AppDispatch, RootState } from "@/store/store";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { setToastMessage, setAuthAction } from "@/features/auth/authSlice";
+import { useTranslation } from "react-i18next";
 
 GoogleSignin.configure({
     webClientId: '602928549917-09l26k2hmkgqjn096f913ad2l5kttjup.apps.googleusercontent.com',
 });
 
 export default function AuthScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { colors } = useTheme();
     const [email, setEmail] = useState('');
@@ -41,6 +43,7 @@ export default function AuthScreen() {
     const [hasNavigatedToVerify, setHasNavigatedToVerify] = useState(false);
 
     useEffect(() => {
+        // router.push('/verify')
         if (user && !hasNavigatedToVerify) {
             if (user.emailVerified) {
                 router.replace('/(tabs)/dashboard');
@@ -63,20 +66,20 @@ export default function AuthScreen() {
         try {
             if (authAction === 'signup') {
                 if (!email || !password || !name) {
-                    dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Please enter all required fields' }));
+                    dispatch(setToastMessage({ title: t('error'), status: 'error', description: t('pleaseEnterAllFields') }));
                     return;
                 }
                 await dispatch(signUpWithEmail(email, password, name, image));
             } else {
                 if (!email || !password) {
-                    dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Please enter both email and password' }));
+                    dispatch(setToastMessage({ title: t('error'), status: 'error', description: t('pleaseEnterEmailPassword') }));
                     return;
                 }
                 await dispatch(loginWithEmail(email, password));
             }
         } catch (error: any) {
-            const errorMessage = error?.message || 'An unexpected error occurred during authentication.';
-            dispatch(setToastMessage({ title: 'Error', status: 'error', description: errorMessage }));
+            const errorMessage = error?.message || t('authError');
+            dispatch(setToastMessage({ title: t('error'), status: 'error', description: errorMessage }));
         }
     };
 
@@ -84,7 +87,7 @@ export default function AuthScreen() {
         try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert('Permission required', 'We need access to your photos to set a profile picture');
+                Alert.alert(t('permissionRequired'), t('photoAccessRequired'));
                 return;
             }
             const result = await ImagePicker.launchImageLibraryAsync({
@@ -102,7 +105,7 @@ export default function AuthScreen() {
             setImage(selectedImage);
         } catch (error) {
             console.error('Error:', error);
-            Alert.alert('Error', 'Failed to pick image. Please try again.');
+            Alert.alert(t('error'), t('imagePickError'));
         }
     };
 
@@ -110,9 +113,9 @@ export default function AuthScreen() {
         try {
             await dispatch(loginWithGoogle());
         } catch (error: any) {
-            const errorMessage = error?.message || 'An unexpected error occurred during Google sign-in.';
+            const errorMessage = error?.message || t('googleSignInError');
             dispatch(setToastMessage({
-                title: 'Google Sign-In Error',
+                title: t('googleSignInErrorTitle'),
                 status: 'error',
                 description: errorMessage
             }));
@@ -121,7 +124,7 @@ export default function AuthScreen() {
 
     const handlePasswordReset = async () => {
         if (!email) {
-            dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Please enter your email first' }));
+            dispatch(setToastMessage({ title: t('error'), status: 'error', description: t('enterEmailFirst') }));
             return;
         }
         try {
@@ -132,9 +135,9 @@ export default function AuthScreen() {
                 dispatch(setAuthAction('login'));
             }
         } catch (error: any) {
-            const errorMessage = error?.message || 'An unexpected error occurred during password reset.';
+            const errorMessage = error?.message || t('passwordResetError');
             dispatch(setToastMessage({
-                title: 'Password Reset Error',
+                title: t('passwordResetErrorTitle'),
                 status: 'error',
                 description: errorMessage
             }));
@@ -156,7 +159,6 @@ export default function AuthScreen() {
                 }}
                     keyboardShouldPersistTaps="handled"
                 >
-
                     <Box flex={2} justifyContent={'flex-end'} mt={10} >
                         {authAction === 'signup' && <Text
                             fontSize="5xl"
@@ -165,7 +167,7 @@ export default function AuthScreen() {
                             style={{ fontFamily: "Borel_400Regular" }}
                             color="primary.600"
                         >
-                            Welcome
+                            {t('welcome')}
                         </Text>}
                     </Box>
                     <VStack space={4} w="100%" flex={6}>
@@ -176,7 +178,7 @@ export default function AuthScreen() {
                             style={{ fontFamily: "Borel_400Regular" }}
                             color="primary.600"
                         >
-                            {authAction === 'login' ? 'Sign in' : authAction === 'signup' ? 'Sign up' : 'Reset Password'}
+                            {authAction === 'login' ? t('signIn') : authAction === 'signup' ? t('signUp') : t('resetPassword')}
                         </Text>
                         <Box w="100%">
                             {authAction === 'signup' && (
@@ -188,14 +190,14 @@ export default function AuthScreen() {
                                             </Avatar>
                                         </Pressable>
                                         <Text mt={2} color="primary.600" fontSize="sm">
-                                            Tap to add profile photo
+                                            {t('tapToAddPhoto')}
                                         </Text>
                                     </Center>
                                     <FormControl>
-                                        <FormControl.Label>Full Name</FormControl.Label>
+                                        <FormControl.Label>{t('fullName')}</FormControl.Label>
                                         <TextInput
                                             className="h-[50px] rounded-lg bg-white px-4 text-base"
-                                            placeholder="Enter your full name"
+                                            placeholder={t('enterFullName')}
                                             value={name}
                                             onChangeText={setName}
                                             editable={!loading && !googleLoading}
@@ -205,10 +207,10 @@ export default function AuthScreen() {
                             )}
 
                             <FormControl mt={authAction === 'signup' ? 4 : 0}>
-                                <FormControl.Label>Email</FormControl.Label>
+                                <FormControl.Label>{t('email')}</FormControl.Label>
                                 <TextInput
                                     className="h-[50px] rounded-lg bg-white px-4 text-base"
-                                    placeholder="Enter your email"
+                                    placeholder={t('enterEmail')}
                                     value={email}
                                     onChangeText={setEmail}
                                     autoCapitalize="none"
@@ -220,10 +222,10 @@ export default function AuthScreen() {
 
                             {authAction !== 'resetpass' && (
                                 <FormControl mt="4">
-                                    <FormControl.Label>Password</FormControl.Label>
+                                    <FormControl.Label>{t('password')}</FormControl.Label>
                                     <TextInput
                                         className="h-[50px] rounded-lg bg-white px-4 text-base"
-                                        placeholder="Enter your password"
+                                        placeholder={t('enterPassword')}
                                         value={password}
                                         onChangeText={setPassword}
                                         secureTextEntry={true}
@@ -239,7 +241,7 @@ export default function AuthScreen() {
                                     mt="2"
                                     onPress={() => dispatch(setAuthAction('resetpass'))}
                                 >
-                                    Forgot password?
+                                    {t('forgotPassword')}
                                 </Link>
                             )}
                         </Box>
@@ -255,7 +257,7 @@ export default function AuthScreen() {
                                 rounded="xl"
                                 shadow={3}
                             >
-                                Reset Password
+                                {t('resetPassword')}
                             </Button> : <>
                                 <Button
                                     onPress={handleEmailAuth}
@@ -267,7 +269,7 @@ export default function AuthScreen() {
                                     rounded="xl"
                                     shadow={3}
                                 >
-                                    {authAction === 'login' ? 'Sign In' : 'Create Account'}
+                                    {authAction === 'login' ? t('signIn') : t('createAccount')}
                                 </Button>
 
                                 <Button
@@ -281,7 +283,7 @@ export default function AuthScreen() {
                                     rounded="xl"
                                     shadow={3}
                                 >
-                                    Continue with Google
+                                    {t('continueWithGoogle')}
                                 </Button>
                             </>}
 
@@ -291,8 +293,8 @@ export default function AuthScreen() {
                             mt="2"
                         >
                             {authAction === 'login'
-                                ? "Don't have an account? Sign up"
-                                : "Already have an account? Sign in"}
+                                ? t('dontHaveAccountSignUp')
+                                : t('alreadyHaveAccountSignIn')}
                         </Link>
                     </VStack>
                 </ScrollView>

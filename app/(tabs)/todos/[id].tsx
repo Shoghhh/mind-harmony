@@ -9,21 +9,21 @@ import { MaterialIcons } from '@expo/vector-icons';
 import colors from '@/styles/colors';
 import formatDate from '@/utils/formatDate';
 import ConfirmationDialog from '@/components/MyDialog';
+import { useTranslation } from 'react-i18next';
 
 export default function TodoDetail() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { id } = useLocalSearchParams();
     const dispatch = useDispatch<AppDispatch>();
 
     const todoId = Array.isArray(id) ? id[0] : id;
-
     const todo = useSelector((state: RootState) =>
         state.todos.todos.find((item) => item.id === todoId)
     );
     const { updateLoading, deleteLoading } = useSelector((state: RootState) =>
         state.todos
     );
-
 
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -36,17 +36,16 @@ export default function TodoDetail() {
         dispatch(toggleTodoCompletionAsync(todoId));
     };
 
-
     const formatTimeSpent = (seconds: number) => {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         const remainingSeconds = seconds % 60;
 
         let formatted = '';
-        if (hours > 0) formatted += `${hours}h `;
-        if (minutes > 0) formatted += `${minutes}m `;
+        if (hours > 0) formatted += `${hours}${t('hourAbbr')} `;
+        if (minutes > 0) formatted += `${minutes}${t('minuteAbbr')} `;
         if (remainingSeconds > 0 || formatted === '') {
-            formatted += `${remainingSeconds}s`;
+            formatted += `${remainingSeconds}${t('secondAbbr')}`;
         }
         return formatted.trim();
     };
@@ -64,29 +63,25 @@ export default function TodoDetail() {
         }
     };
 
-
     if (!todoId || typeof todoId !== 'string') {
         return (
             <Box flex={1} justifyContent="center" alignItems="center">
                 <Text fontSize="xl" color="neutral.grayDark" fontWeight="medium">
-                    Invalid Todo ID
+                    {t('invalidTodoId')}
                 </Text>
             </Box>
         );
     }
-
 
     if (!todo) {
         return (
             <Box flex={1} justifyContent="center" alignItems="center">
                 <Text fontSize="xl" color="neutral.grayDark" fontWeight="medium">
-                    Todo not found
+                    {t('todoNotFound')}
                 </Text>
             </Box>
         );
     }
-
-
 
     return (
         <ScrollView flex={1} p={6} marginBottom={3}>
@@ -104,7 +99,7 @@ export default function TodoDetail() {
                             textTransform: 'uppercase',
                         }}
                     >
-                        {todo.completed ? 'Completed' : 'In Progress'}
+                        {todo.completed ? t('completed') : t('inProgress')}
                     </Badge>
                 </Box>
 
@@ -113,7 +108,7 @@ export default function TodoDetail() {
                         <HStack alignItems="center" space={2}>
                             <Icon as={MaterialIcons} name="add" size="sm" color="primary.600" />
                             <Text fontSize="md" color="primary.600" fontWeight="medium">
-                                Added to app:
+                                {t('addedToApp')}:
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
@@ -125,7 +120,7 @@ export default function TodoDetail() {
                         <HStack alignItems="center" space={2}>
                             <Icon as={MaterialIcons} name="event-available" size="sm" color="primary.600" />
                             <Text fontSize="md" color="primary.600" fontWeight="medium">
-                                Target completion date:
+                                {t('targetCompletionDate')}:
                             </Text>
                         </HStack>
                         <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
@@ -138,7 +133,7 @@ export default function TodoDetail() {
                             <HStack alignItems="center" space={2}>
                                 <Icon as={MaterialIcons} name="done-all" size="sm" color="primary.600" />
                                 <Text fontSize="md" color="primary.600" fontWeight="medium">
-                                    Actually completed:
+                                    {t('actuallyCompleted')}:
                                 </Text>
                             </HStack>
                             <Text fontSize="lg" color="primary.525" ml={6} mt={1}>
@@ -148,7 +143,7 @@ export default function TodoDetail() {
                                 <HStack alignItems="center" space={2} ml={6} mt={1}>
                                     <Icon as={MaterialIcons} name="timer" size="sm" color="primary.600" />
                                     <Text fontSize="md" color="primary.600">
-                                        Time spent: {formatTimeSpent(todo.timeSpent)}
+                                        {t('timeSpent')}: {formatTimeSpent(todo.timeSpent)}
                                     </Text>
                                 </HStack>
                             )}
@@ -159,7 +154,7 @@ export default function TodoDetail() {
                     <HStack alignItems="center" space={2}>
                         <Icon as={MaterialIcons} name="priority-high" size="sm" color="primary.600" />
                         <Text fontSize="md" color="primary.600" fontWeight="medium">
-                            Priority:
+                            {t('priority')}:
                         </Text>
                     </HStack>
                     <Badge
@@ -176,7 +171,7 @@ export default function TodoDetail() {
                             fontWeight: 'bold',
                         }}
                     >
-                        {PriorityLabels[todo.priority as Priority]}
+                        {t(PriorityLabels[todo.priority as Priority])}
                     </Badge>
                 </Box>
 
@@ -184,7 +179,7 @@ export default function TodoDetail() {
                     <HStack alignItems="center" space={2}>
                         <Icon as={MaterialIcons} name="description" size="sm" color="primary.600" />
                         <Text fontSize="md" color="primary.600" fontWeight="medium">
-                            Description:
+                            {t('description')}:
                         </Text>
                     </HStack>
                     {todo.description.length ? (
@@ -193,7 +188,7 @@ export default function TodoDetail() {
                         </Text>
                     ) : (
                         <Text fontSize="lg" color="gray.500" mt={2} ml={6} fontStyle="italic">
-                            No description provided
+                            {t('noDescription')}
                         </Text>
                     )}
                 </Box>
@@ -218,7 +213,7 @@ export default function TodoDetail() {
                         _text={{ fontSize: 'md', fontWeight: 'bold' }}
                         onPress={handleToggleComplete}
                     >
-                        {todo.completed ? 'Mark as Incomplete' : 'Mark as Complete'}
+                        {todo.completed ? t('markIncomplete') : t('markComplete')}
                     </Button>
 
                     <Button
@@ -234,7 +229,7 @@ export default function TodoDetail() {
                         borderColor={'red.400'}
                         onPress={() => setIsDeleteOpen(true)}
                     >
-                        Delete Todo
+                        {t('deleteTodo')}
                     </Button>
                 </VStack>
                 <ConfirmationDialog
@@ -243,7 +238,6 @@ export default function TodoDetail() {
                     onConfirm={() => handleDelete()}
                     type="delete"
                 />
-
             </VStack>
         </ScrollView>
     );

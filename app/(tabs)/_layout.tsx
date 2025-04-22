@@ -1,4 +1,3 @@
-import Header from "@/components/navigation/Header";
 import TabBar from "@/components/navigation/TabBar";
 import Background from "@/providers/Background";
 import { RootState } from "@/store/store";

@@ -23,10 +23,12 @@ import { usePomodoroTimer } from '@/hooks/usePomodoroTimer';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
 import { useTimerFeedback } from '@/hooks/useTimerFeedback';
 import ConfirmationDialog from '../MyDialog';
+import { useTranslation } from 'react-i18next';
 
 type TimerMode = "pomodoro" | "shortRest" | "longRest";
 
 const PomodoroTimer = () => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { present } = useBottomSheet();
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
@@ -90,6 +92,15 @@ const PomodoroTimer = () => {
     present(() => <TodoSelectionComponent onSelect={handleTodoSelection} />);
   }, [present]);
 
+  const getModeLabel = (mode: TimerMode) => {
+    switch(mode) {
+      case 'pomodoro': return t('focus');
+      case 'shortRest': return t('shortBreak');
+      case 'longRest': return t('longBreak');
+      default: return '';
+    }
+  };
+
   return (
     <Box flex={1} mb={70}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }}>
@@ -106,8 +117,7 @@ const PomodoroTimer = () => {
                 _pressed={{ opacity: 0.8 }}
               >
                 <Text fontSize="sm" fontWeight="medium" color={state.mode === mode ? 'white' : secondaryText}>
-                  {mode === 'pomodoro' ? 'Focus' :
-                    mode === 'shortRest' ? 'Short Break' : 'Long Break'}
+                  {getModeLabel(mode)}
                 </Text>
               </Pressable>
             ))}
@@ -125,7 +135,7 @@ const PomodoroTimer = () => {
           </Box>
 
           <Text color={secondaryText} textAlign="center">
-            {state.mode === 'pomodoro' ? 'Time to focus!' : 'Take a well-deserved break'}
+            {state.mode === 'pomodoro' ? t('focusMessage') : t('breakMessage')}
           </Text>
 
           {selectedTodoId && todo && (
@@ -163,7 +173,7 @@ const PomodoroTimer = () => {
                       mr={1}
                     />
                     <Text color="white" fontSize="xs" fontWeight="medium">
-                      Done
+                      {t('done')}
                     </Text>
                   </Pressable>
                 </HStack>
@@ -182,7 +192,7 @@ const PomodoroTimer = () => {
                 <HStack alignItems="center" space={2} mt={1}>
                   <Icon as={Feather} name="check-circle" color="primary.500" size={4} />
                   <Text fontSize="xs" color="primary.500">
-                    {state.cycles - 1} pomodoros completed
+                    {state.cycles - 1} {t('pomodorosCompleted')}
                   </Text>
                 </HStack>
               </VStack>
@@ -204,7 +214,7 @@ const PomodoroTimer = () => {
               py={3}
               rounded="xl"
             >
-              Select a Todo
+              {t('selectTodo')}
             </Button>
           )}
 
@@ -218,7 +228,7 @@ const PomodoroTimer = () => {
             rounded="xl"
             shadow={3}
           >
-            {state.isActive ? "Pause" : "Start Focus"}
+            {state.isActive ? t('pause') : t('startFocus')}
           </Button>
 
           <HStack space={3}>
@@ -232,7 +242,7 @@ const PomodoroTimer = () => {
               py={3}
               rounded="xl"
             >
-              Skip
+              {t('skip')}
             </Button>
             <Button
               flex={1}
@@ -246,7 +256,7 @@ const PomodoroTimer = () => {
               py={3}
               rounded="xl"
             >
-              Reset
+              {t('reset')}
             </Button>
           </HStack>
         </VStack>

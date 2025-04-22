@@ -11,8 +11,10 @@ import { AppDispatch, RootState } from '@/store/store';
 import { Timestamp } from 'firebase/firestore';
 import moment from 'moment';
 import { setToastMessage } from '@/features/auth/authSlice';
+import { useTranslation } from 'react-i18next';
 
 export default function AddTodo() {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [title, setTitle] = useState('');
@@ -25,7 +27,7 @@ export default function AddTodo() {
 
   const priorityOptions = Object.entries(PriorityLabels).map(([key, label]) => ({
     value: Number(key) as Priority,
-    label,
+    label: t(label),
   }));
 
   const existingTodo = useSelector((state: RootState) =>
@@ -53,12 +55,20 @@ export default function AddTodo() {
 
   const handleSaveTodo = async () => {
     if (!title.trim()) {
-      dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Task name is required' }));
+      dispatch(setToastMessage({ 
+        title: t('error'), 
+        status: 'error', 
+        description: t('taskNameRequired') 
+      }));
       return;
     }
 
     if (!(assignedDate instanceof Date) || isNaN(assignedDate.getTime())) {
-      dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Invalid assigned date' }));
+      dispatch(setToastMessage({ 
+        title: t('error'), 
+        status: 'error', 
+        description: t('invalidDate') 
+      }));
       return;
     }
 
@@ -81,7 +91,7 @@ export default function AddTodo() {
 
     const navigate = () => router.push({
       pathname: '/(tabs)/todos',
-      params: { date: assignedDate.toISOString() } // Pass ISO string for navigation
+      params: { date: assignedDate.toISOString() }
     });
 
     try {
@@ -95,7 +105,7 @@ export default function AddTodo() {
       if (error instanceof Error) {
         console.error(error.message);
       } else {
-        console.error('An unknown error occurred during saving.');
+        console.error(t('unknownError'));
       }
     }
   };
@@ -122,19 +132,20 @@ export default function AddTodo() {
         <VStack space={6}>
           <Box>
             <Text fontSize="md" color="primary.600" >
-              Task Name
+              {t('taskName')}
             </Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
               className="text-2xl rounded-none border-0 border-b-2 border-primary-600 text-primary-525 h-[60]"
               style={{ marginTop: 0, margin: 0 }}
+              placeholder={t('enterTaskName')}
             />
           </Box>
 
           <Box>
             <Text fontSize="md" color="primary.600" marginBottom={5} >
-              Select Priority
+              {t('selectPriority')}
             </Text>
             <HStack space={3}>
               {priorityOptions.map(({ value, label }) => (
@@ -159,7 +170,7 @@ export default function AddTodo() {
 
           <Box>
             <Text fontSize="md" color="primary.600">
-              Assigned Date
+              {t('assignedDate')}
             </Text>
             <Pressable onPress={() => setDatePickerVisibility(true)} className="text-xl rounded-none border-0 border-b-2 border-primary-600 h-[40] mt-[15]">
               <Text fontSize="2xl" color="primary.525">
@@ -169,7 +180,7 @@ export default function AddTodo() {
           </Box>
           <Box>
             <Text fontSize="md" color="primary.600" >
-              Task Description
+              {t('taskDescription')}
             </Text>
             <TextInput
               value={description}
@@ -177,6 +188,7 @@ export default function AddTodo() {
               className="text-2xl rounded-none border-1 border-b-2 border-primary-600 text-primary-525 min-h-[50]"
               multiline
               numberOfLines={6}
+              placeholder={t('enterTaskDescription')}
             />
           </Box>
           <Button
@@ -199,7 +211,7 @@ export default function AddTodo() {
             }}
             isLoading={loading || updateLoading}
           >
-            {todoId ? "Save" : 'Create Task'}
+            {todoId ? t('save') : t('createTask')}
           </Button>
           <DateTimePickerModal
             isVisible={isDatePickerVisible}
@@ -211,6 +223,7 @@ export default function AddTodo() {
               setDatePickerVisibility(false);
             }}
             onCancel={() => setDatePickerVisibility(false)}
+            locale={t('datePickerLocale')}
           />
         </VStack>
       </ScrollView>

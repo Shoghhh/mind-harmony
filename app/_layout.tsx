@@ -17,6 +17,8 @@ import colors from '@/styles/colors';
 import { useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { fetchTodos } from '@/features/todos/todosThunks';
+import i18n from '@/i18n';
+import { I18nextProvider } from 'react-i18next';
 
 // completed update doesnt update in the firestore +
 // call fetch todos somewhere at the beginning +
@@ -37,25 +39,27 @@ import { fetchTodos } from '@/features/todos/todosThunks';
 export default function RootLayout() {
     return (
         <Provider store={store}>
-            <NativeBaseProvider theme={customTheme}>
-                <ToastProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                        <PomodoroProvider>
-                            <BottomSheetProvider>
-                                <Background>
-                                    <AuthListener />
-                                    <ReduxAuthLayout />
-                                    <StatusBar
-                                        backgroundColor="transparent"
-                                        barStyle="light-content"
-                                        translucent
-                                    />
-                                </Background>
-                            </BottomSheetProvider>
-                        </PomodoroProvider>
-                    </GestureHandlerRootView>
-                </ToastProvider>
-            </NativeBaseProvider>
+            <I18nextProvider i18n={i18n} defaultNS={'translation'}>
+                <NativeBaseProvider theme={customTheme}>
+                    <ToastProvider>
+                        <GestureHandlerRootView style={{ flex: 1 }}>
+                            <PomodoroProvider>
+                                <BottomSheetProvider>
+                                    <Background>
+                                        <AuthListener />
+                                        <ReduxAuthLayout />
+                                        <StatusBar
+                                            backgroundColor="transparent"
+                                            barStyle="light-content"
+                                            translucent
+                                        />
+                                    </Background>
+                                </BottomSheetProvider>
+                            </PomodoroProvider>
+                        </GestureHandlerRootView>
+                    </ToastProvider>
+                </NativeBaseProvider>
+            </I18nextProvider>
         </Provider>
     );
 }

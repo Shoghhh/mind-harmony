@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, VStack, ScrollView, useToast } from 'native-base';
+import { Box, Button, VStack, ScrollView } from 'native-base';
 import { Keyboard, TextInput, Alert } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
@@ -7,30 +7,42 @@ import { auth } from '@/firebase/firebase';
 import { setToastMessage } from '@/features/auth/authSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
+import { useTranslation } from 'react-i18next';
 
 const ChangePasswordScreen = () => {
+    const { t } = useTranslation();
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const toast = useToast();
-    const dispatch = useDispatch<AppDispatch>()
+    const dispatch = useDispatch<AppDispatch>();
 
     const handleChangePassword = async () => {
-        console.log(1111)
         try {
             if (!currentPassword || !newPassword || !confirmPassword) {
-                dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'All fields are required' }));
-                return;//
+                dispatch(setToastMessage({ 
+                    title: t('error'), 
+                    status: 'error', 
+                    description: t('allFieldsRequired') 
+                }));
+                return;
             }
 
             if (newPassword !== confirmPassword) {
-                dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'New passwords do not match' }));
+                dispatch(setToastMessage({ 
+                    title: t('error'), 
+                    status: 'error', 
+                    description: t('passwordsDontMatch') 
+                }));
                 return;
             }
 
             if (newPassword.length < 6) {
-                dispatch(setToastMessage({ title: 'Error', status: 'error', description: 'Password must be at least 6 characters' }));
+                dispatch(setToastMessage({ 
+                    title: t('error'), 
+                    status: 'error', 
+                    description: t('passwordMinLength') 
+                }));
                 return;
             }
 
@@ -38,7 +50,7 @@ const ChangePasswordScreen = () => {
 
             const user = auth.currentUser;
             if (!user || !user.email) {
-                throw new Error('No authenticated user found');
+                throw new Error(t('noAuthUser'));
             }
 
             // Reauthenticate user
@@ -52,9 +64,9 @@ const ChangePasswordScreen = () => {
             await updatePassword(user, newPassword);
 
             dispatch(setToastMessage({
-                title: 'Success',
+                title: t('success'),
                 status: 'success',
-                description: 'Password changed successfully'
+                description: t('passwordChangeSuccess')
             }));
 
             // Clear form
@@ -65,16 +77,20 @@ const ChangePasswordScreen = () => {
         } catch (error: any) {
             console.error('Password change error:', error);
 
-            let errorMessage = 'Failed to change password';
+            let errorMessage = t('passwordChangeFailed');
             if (error.code === 'auth/wrong-password') {
-                errorMessage = 'Current password is incorrect';
+                errorMessage = t('incorrectCurrentPassword');
             } else if (error.code === 'auth/requires-recent-login') {
-                errorMessage = 'Session expired. Please login again.';
+                errorMessage = t('sessionExpired');
             } else if (error.code) {
                 errorMessage = error.message;
             }
 
-            dispatch(setToastMessage({ title: 'Error', status: 'error', description: errorMessage }));
+            dispatch(setToastMessage({ 
+                title: t('error'), 
+                status: 'error', 
+                description: errorMessage 
+            }));
 
         } finally {
             setLoading(false);
@@ -87,7 +103,7 @@ const ChangePasswordScreen = () => {
                 <VStack space={4}>
                     <TextInput
                         className="h-[50px] rounded-lg bg-white px-4 text-base"
-                        placeholder="Current Password"
+                        placeholder={t('currentPassword')}
                         secureTextEntry
                         value={currentPassword}
                         onChangeText={setCurrentPassword}
@@ -95,7 +111,7 @@ const ChangePasswordScreen = () => {
                     />
                     <TextInput
                         className="h-[50px] rounded-lg bg-white px-4 text-base"
-                        placeholder="New Password"
+                        placeholder={t('newPassword')}
                         secureTextEntry
                         value={newPassword}
                         onChangeText={setNewPassword}
@@ -103,7 +119,7 @@ const ChangePasswordScreen = () => {
                     />
                     <TextInput
                         className="h-[50px] rounded-lg bg-white px-4 text-base"
-                        placeholder="Confirm New Password"
+                        placeholder={t('confirmNewPassword')}
                         secureTextEntry
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
@@ -120,7 +136,7 @@ const ChangePasswordScreen = () => {
                         shadow={3}
                         isLoading={loading}
                     >
-                        Save Changes
+                        {t('saveChanges')}
                     </Button>
                 </VStack>
             </Box>

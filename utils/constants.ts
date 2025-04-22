@@ -5,9 +5,9 @@ export enum Priority {
 }
 
 export const PriorityLabels: Record<Priority, string> = {
-    [Priority.Low]: "Low",
-    [Priority.Medium]: "Medium",
-    [Priority.High]: "High",
+    [Priority.Low]: "low",
+    [Priority.Medium]: "medium",
+    [Priority.High]: "high",
 };
 
 export enum Sort {

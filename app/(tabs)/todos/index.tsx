@@ -14,11 +14,13 @@ import { Timestamp } from 'firebase/firestore';
 import moment from 'moment';
 import { Box, CheckIcon, ChevronDownIcon, Progress, Select } from 'native-base';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useSelector, useDispatch } from 'react-redux';
 
 export default function TodoList() {
+    const { t } = useTranslation();
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const { date } = useLocalSearchParams();
@@ -38,30 +40,31 @@ export default function TodoList() {
         dispatch(setDateOption(value));
     };
 
-    const dateOptions = Object.entries(DateLabels).map(([key, label]) => ({
-        value: Number(key) as myDate,
-        label,
-    }))
+    const dateOptions = [
+        { value: myDate.ByDay, label: t('byDay') },
+        { value: myDate.ByMonth, label: t('byMonth') },
+        { value: myDate.ByYear, label: t('byYear') }
+      ]
     const [isAscending, setIsAscending] = useState(true);
     const [viewMode, setViewMode] = useState<'list' | 'tabbed'>('list');
 
     const sortOptions = useMemo(() => {
-        const allOptions = Object.entries(SortLabels).map(([key, label]) => ({
-            value: Number(key) as Sort,
-            label,
-        }));
+        const options = [
+            { value: Sort.Priority, label: t('priority') },
+            { value: Sort.CreatedDate, label: t('createdDate') },
+            { value: Sort.CompletedDate, label: t('completedDate') },
+            { value: Sort.AssignedDate, label: t('assignedDate') }
+        ];
 
         if (dateOption !== myDate.ByDay) {
-            return allOptions.filter(option =>
-                [Sort.Priority, Sort.CreatedDate].includes(option.value)
-            );
+            return options.filter(option =>
+                [Sort.Priority, Sort.CreatedDate].includes(option.value))
         }
         if (viewMode === 'tabbed') {
-            return allOptions.filter(option =>
-                ![Sort.AssignedDate, Sort.CompletedDate].includes(option.value)
-            );
+            return options.filter(option =>
+                ![Sort.AssignedDate, Sort.CompletedDate].includes(option.value))
         }
-        return allOptions.filter(option => option.value !== Sort.AssignedDate);
+        return options.filter(option => option.value !== Sort.AssignedDate);
     }, [dateOption, viewMode]);
 
     const handleDateChange = (date: Date) => {
@@ -100,7 +103,6 @@ export default function TodoList() {
             .finally(() => setCurrentlyUpdatingId(null));
     };
 
-  
 
     const toggleViewMode = () => {
         setViewMode(viewMode === 'list' ? 'tabbed' : 'list');
@@ -379,10 +381,10 @@ export default function TodoList() {
         {viewMode === "tabbed" && (
             <View className="flex flex-row justify-between mb-5">
                 <TouchableOpacity className={`py-2 px-4 flex-1 items-center  ${selectedTab === "incomplete" ? "border-b-2 border-primary-990" : "border-transparent"}`} onPress={() => setSelectedTab("incomplete")}>
-                    <Text className="text-primary-990 font-medium">To Do</Text>
+                    <Text className="text-primary-990 font-medium">{t('toDo')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity className={`py-2 px-4 flex-1 items-center  ${selectedTab === "completed" ? "border-b-2 border-primary-990" : "border-transparent"}`} onPress={() => setSelectedTab("completed")}>
-                    <Text className="text-primary-990 font-medium">Completed</Text>
+                    <Text className="text-primary-990 font-medium">{t('completed')}</Text>
                 </TouchableOpacity>
             </View>
         )}
@@ -396,7 +398,7 @@ export default function TodoList() {
                 <View>
                     {dateOption == 0 ? null : (
                         <Text className="text-primary-990 font-medium">
-                            {item.title ? moment(item.title).format(dateOption == 1 ? "DD MMM" : "MMM") : "No Date"}
+                            {item.title ? moment(item.title).format(dateOption == 1 ? "DD MMM" : "MMM") : t('noDate')}
                         </Text>
                     )}
                     {item.data.map((task: Todo) => (
@@ -409,11 +411,11 @@ export default function TodoList() {
             contentContainerStyle={{ paddingBottom: 20 }}
             ListEmptyComponent={() => (
                 <View className="flex items-center justify-center">
-                    <Text className="text-gray-500">No todos available</Text>
+                    <Text className="text-gray-500">{t('noTodosAvailable')}</Text>
                 </View>
             )}
         />}
-        <DateTimePickerModal display="spinner" isVisible={isDatePickerVisible} date={currentDate} mode="date" onConfirm={handleDateChange} onCancel={() => setDatePickerVisibility(false)} locale="en_GB" />
+        <DateTimePickerModal display="spinner" isVisible={isDatePickerVisible} date={currentDate} mode="date" onConfirm={handleDateChange} onCancel={() => setDatePickerVisibility(false)} locale="hy-AM" />
     </View>
     );
 };
